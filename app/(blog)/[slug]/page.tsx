@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { PostActions } from "./post-actions";
 import { Badge } from "@/components/ui/badge";
+import { getAllPosts, getPostBySlug } from "@/lib/posts";
 
 type Props = {
   params: Promise<{ slug: string }>;
