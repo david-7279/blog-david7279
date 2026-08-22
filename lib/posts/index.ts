@@ -2,22 +2,9 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
+import type { Post, PostMeta } from "./types";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
-
-export type PostMeta = {
-  slug: string;
-  title: string;
-  description?: string;
-  date: string;
-  tags?: string[];
-  published: boolean;
-  readingTime: string;
-};
-
-export type Post = PostMeta & {
-  content: string;
-};
 
 export function getAllPosts(): PostMeta[] {
   if (!fs.existsSync(postsDirectory)) {
@@ -26,7 +13,7 @@ export function getAllPosts(): PostMeta[] {
 
   const files = fs
     .readdirSync(postsDirectory)
-    .filter((f) => f.endsWith(".mdx"));
+    .filter((file) => file.endsWith(".mdx"));
 
   const posts = files
     .map((filename) => {
@@ -72,3 +59,5 @@ export function getPostBySlug(slug: string): Post | null {
     content,
   };
 }
+
+export type { Post, PostMeta };
