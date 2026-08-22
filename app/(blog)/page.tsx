@@ -12,13 +12,13 @@ export default function BlogPage() {
         <div className="flex items-start justify-between gap-6">
           <div className="space-y-3">
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-              David7279
+              Blog
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
               Pensamentos, side projects e anotações sobre tecnologia e criação.
             </p>
           </div>
-          <ThemeToggle className="mt-1 shrink-0" />
+          <ThemeToggle />
         </div>
       </header>
 
