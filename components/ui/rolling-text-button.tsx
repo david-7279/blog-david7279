@@ -9,6 +9,7 @@ import { ArrowUpRight } from "lucide-react";
 interface RollingTextButtonProps {
   title: string;
   href: string;
+  className?: string;
 }
 
 const outgoingVariants = {
@@ -26,7 +27,11 @@ const transition = {
   ease: [0.338, 0.015, 0.395, 0.959] as const,
 };
 
-export function RollingTextButton({ title, href }: RollingTextButtonProps) {
+export function RollingTextButton({
+  title,
+  href,
+  className,
+}: RollingTextButtonProps) {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(false);
   const activeRef = useRef(false);
@@ -78,7 +83,7 @@ export function RollingTextButton({ title, href }: RollingTextButtonProps) {
     <Link href={href}>
       <motion.button
         type="button"
-        className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+        className={`${className} group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer`}
         onHoverStart={() => {
           hovered.current = true;
           requestActive(true);

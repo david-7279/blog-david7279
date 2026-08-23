@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import { RollingTextButton } from "@/components/ui/rolling-text-button";
+import * as React from "react";
+import { PostWithStats } from "@/lib/posts/types";
 
 type PostCardProps = {
-  post: PostMeta;
+  post: PostWithStats;
   variant?: "default" | "compact" | "minimal" | "featured";
 };
 
