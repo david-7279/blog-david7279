@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/nav/header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -108,7 +109,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Header />
+          <main className="mx-auto w-full max-w-3xl px-6 py-20">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
