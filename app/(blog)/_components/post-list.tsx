@@ -1,15 +1,17 @@
-import type { PostMeta } from "@/lib/posts";
-import { PostCard } from "@/app/(blog)/_components/post-card-variants";
+"use client";
+
+import { PostCard } from "@/app/(blog)/_components/post-card";
+import { PostWithStats } from "@/lib/posts/types";
 
 type PostListProps = {
-  posts: PostMeta[];
+  posts: PostWithStats[];
 };
 
 export function PostList({ posts }: PostListProps) {
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <PostCard key={post.slug} post={post} variant="default" />
+        <PostCard key={post.slug} post={post} />
       ))}
     </div>
   );
