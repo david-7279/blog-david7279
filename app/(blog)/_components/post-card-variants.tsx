@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
+import { RollingTextButton } from "@/components/ui/rolling-text-button";
 
 type PostCardProps = {
   post: PostMeta;
@@ -46,7 +47,7 @@ export function PostCard({ post, variant = "default" }: PostCardProps) {
 function DefaultPostCard({ post }: { post: PostMeta }) {
   return (
     <Link href={paths.post(post.slug)} className="group block">
-      <Card className="border-border shadow-none transition-all hover:shadow-md hover:bg-muted/5">
+      <Card className="border-border shadow-none transition-al hover:shadow-md hover:bg-muted/5">
         <CardContent className="relative p-6">
           {/* Content wrapper with padding for button space */}
           <div className="flex flex-col gap-4 pr-12">
@@ -81,18 +82,14 @@ function DefaultPostCard({ post }: { post: PostMeta }) {
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Arrow button - top right, doesn't overlap content */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-6 top-6 size-10 rounded-full opacity-60 transition-all group-hover:opacity-100 group-hover:rotate-45 group-hover:bg-muted/50"
-            aria-label={`Read "${post.title}"`}
-            onClick={(e) => e.preventDefault()}
-          >
-            <ArrowUpRight className="size-5" />
-          </Button>
+            <div className="pt-2">
+              <RollingTextButton
+                href={paths.post(post.slug)}
+                title="Read article"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </Link>

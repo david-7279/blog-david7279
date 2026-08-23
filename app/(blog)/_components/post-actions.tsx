@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Eye } from "lucide-react";
+import { Eye, ThumbsDown, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VoteType } from "@/lib/stats";
 
@@ -90,8 +90,10 @@ export function PostActions({ slug }: PostActionsProps) {
 
   if (!stats) {
     return (
-      <div className="flex items-center gap-3 text-sm text-muted-foreground py-4 border-y border-border/40">
-        A carregar estatísticas...
+      <div className="flex items-center gap-3 py-4">
+        <p className="text-sm text-muted-foreground shimmer">
+          A carregar estatísticas...
+        </p>
       </div>
     );
   }
