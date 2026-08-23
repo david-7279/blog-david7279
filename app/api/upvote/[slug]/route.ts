@@ -7,7 +7,6 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
     const body = await request.json();
-
     const next = body.type as VoteType;
     const previous = (body.previous as VoteType) ?? null;
 

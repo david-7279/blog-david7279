@@ -162,7 +162,7 @@ const bounceVariants: Variants = {
 
 export const AnimatedThemeToggler = ({
   className,
-  duration = 400,
+  duration = 600,
   variant,
   fromCenter = false,
   theme,

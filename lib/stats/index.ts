@@ -11,14 +11,14 @@ export async function getPostStats(slug: string): Promise<PostStats> {
     columns: {
       views: true,
       upvotes: true,
-      downVotes: true,
+      downvotes: true,
     },
   });
 
   return {
     views: stats?.views ?? 0,
     upvotes: stats?.upvotes ?? 0,
-    downVotes: stats?.downVotes ?? 0,
+    downvotes: stats?.downvotes ?? 0,
   };
 }
 
@@ -69,24 +69,24 @@ export async function updateVote(
   }
 
   let upvotes = stats.upvotes;
-  let downVotes = stats.downVotes;
+  let downvotes = stats.downvotes;
 
   // Remove o voto anterior
   if (previous === "up") upvotes = Math.max(0, upvotes - 1);
-  if (previous === "down") downVotes = Math.max(0, downVotes - 1);
+  if (previous === "down") downvotes = Math.max(0, downvotes - 1);
 
   // Adiciona o novo voto
   if (next === "up") upvotes += 1;
-  if (next === "down") downVotes += 1;
+  if (next === "down") downvotes += 1;
 
   const [updated] = await db
     .update(postStats)
-    .set({ upvotes, downVotes })
+    .set({ upvotes, downvotes })
     .where(eq(postStats.slug, slug))
     .returning({
       views: postStats.views,
       upvotes: postStats.upvotes,
-      downVotes: postStats.downVotes,
+      downvotes: postStats.downvotes,
     });
 
   return updated;
