@@ -1,9 +1,9 @@
 export type PostMeta = {
   slug: string;
   title: string;
-  description?: string;
+  description: string;
   date: string;
-  tags?: string[];
+  tags: string[];
   published: boolean;
   author: string;
   readingTime: number;
