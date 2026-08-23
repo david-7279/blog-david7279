@@ -7,6 +7,8 @@ import Header from "@/components/nav/header";
 import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { BackToTop } from "@/components/back-to-top";
 import { Toaster } from "@/components/ui/toast";
+import Footer from "@/components/footer/footer";
+import { Separator } from "@/components/ui/separator";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -105,7 +107,7 @@ export default function RootLayout({
       )}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased">
         <SmoothScrollProvider>
           <ThemeProvider
             attribute="class"
@@ -114,9 +116,16 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Header />
-            <main className="mx-auto w-full max-w-3xl px-6 py-20">
+
+            <main className="flex-1 mx-auto w-full max-w-3xl px-6 py-20">
               {children}
             </main>
+
+            <footer className="mx-auto w-full max-w-3xl px-6 py-5 space-y-3">
+              <Separator className="bg-border/20" />
+              <Footer />
+            </footer>
+
             <Toaster />
             <BackToTop />
           </ThemeProvider>
