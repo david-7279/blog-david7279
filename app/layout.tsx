@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/nav/header";
 import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { BackToTop } from "@/components/back-to-top";
+import { Toaster } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -116,6 +117,7 @@ export default function RootLayout({
             <main className="mx-auto w-full max-w-3xl px-6 py-20">
               {children}
             </main>
+            <Toaster />
             <BackToTop />
           </ThemeProvider>
         </SmoothScrollProvider>
