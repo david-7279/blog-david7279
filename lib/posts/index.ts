@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
-import type { Post, PostMeta } from "./types";
+import type { Post, PostMeta, PostWithStats } from "./types";
+import { getPostStats } from "@/lib/stats";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
 
@@ -22,6 +23,8 @@ export function getAllPosts(): PostMeta[] {
       const fileContents = fs.readFileSync(fullPath, "utf8");
       const { data, content } = matter(fileContents);
 
+      const minutes = Math.ceil(readingTime(content).minutes);
+
       return {
         slug,
         title: data.title ?? slug,
@@ -29,7 +32,8 @@ export function getAllPosts(): PostMeta[] {
         date: data.date ?? new Date().toISOString(),
         tags: data.tags ?? [],
         published: data.published ?? true,
-        readingTime: readingTime(content).text,
+        author: data.author,
+        readingTime: minutes,
       } satisfies PostMeta;
     })
     .filter((post) => post.published)
@@ -48,6 +52,8 @@ export function getPostBySlug(slug: string): Post | null {
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
 
+  const minutes = Math.ceil(readingTime(content).minutes);
+
   return {
     slug,
     title: data.title ?? slug,
@@ -55,9 +61,28 @@ export function getPostBySlug(slug: string): Post | null {
     date: data.date ?? new Date().toISOString(),
     tags: data.tags ?? [],
     published: data.published ?? true,
-    readingTime: readingTime(content).text,
+    author: data.author,
+    readingTime: minutes,
     content,
   };
+}
+
+export async function getAllPostsWithStats(): Promise<PostWithStats[]> {
+  const posts = getAllPosts();
+
+  const postsWithStats = await Promise.all(
+    posts.map(async (post) => {
+      const stats = await getPostStats(post.slug);
+      return {
+        ...post,
+        views: stats.views,
+        upvotes: stats.upvotes,
+        downvotes: stats.downvotes,
+      };
+    }),
+  );
+
+  return postsWithStats;
 }
 
 export type { Post, PostMeta };
