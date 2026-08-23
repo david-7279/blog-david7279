@@ -6,12 +6,12 @@ export type Heading = {
 
 function slugifyHeading(text: string): string {
   return text
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\p{L}\p{N}\s-]/gu, "")
-      .trim()
-      .replace(/\s+/g, "-");
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .trim()
+    .replace(/\s+/g, "-");
 }
 
 /**
@@ -23,11 +23,8 @@ function slugifyHeading(text: string): string {
  * "hello-world-2"
  * "hello-world-3"
  */
-export function extractHeadings(
-    content: string,
-): Heading[] {
-  const headingRegex =
-      /^(#{2,3})\s+(.+?)\s*#*\s*$/gm;
+export function extractHeadings(content: string): Heading[] {
+  const headingRegex = /^(#{2,3})\s+(.+?)\s*#*\s*$/gm;
 
   const headings: Heading[] = [];
   const slugCounts = new Map<string, number>();
@@ -37,9 +34,7 @@ export function extractHeadings(
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length;
 
-    const text = match[2]
-        .replace(/\{[^}]*\}/g, "")
-        .trim();
+    const text = match[2].replace(/\{[^}]*\}/g, "").trim();
 
     if (!text) {
       continue;
@@ -51,15 +46,11 @@ export function extractHeadings(
       continue;
     }
 
-    const count =
-        (slugCounts.get(baseId) ?? 0) + 1;
+    const count = (slugCounts.get(baseId) ?? 0) + 1;
 
     slugCounts.set(baseId, count);
 
-    const id =
-        count === 1
-            ? baseId
-            : `${baseId}-${count}`;
+    const id = count === 1 ? baseId : `${baseId}-${count}`;
 
     headings.push({
       id,
