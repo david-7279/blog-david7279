@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/nav/header";
+import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -103,17 +104,19 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Header />
-          <main className="mx-auto w-full max-w-3xl px-6 py-20">
-            {children}
-          </main>
-        </ThemeProvider>
+        <SmoothScrollProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Header />
+            <main className="mx-auto w-full max-w-3xl px-6 py-20">
+              {children}
+            </main>
+          </ThemeProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );
