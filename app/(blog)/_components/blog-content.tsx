@@ -8,6 +8,7 @@ import { usePostFilters } from "../_hooks/use-post-filters";
 import { PostList } from "./post-list";
 import { Toolbar } from "./toolbar";
 import { EmptySearchState } from "@/app/(blog)/_components/empty-search-state";
+import { AnimatePresence, motion } from "motion/react";
 
 type BlogContentProps = {
   posts: PostWithStats[];
@@ -57,6 +58,13 @@ export function BlogContent({ posts }: BlogContentProps) {
   const hasQuery = query.trim().length > 0;
   const hasSearchResults = searchedPosts.length > 0;
 
+  const contentKey =
+    hasQuery && !hasSearchResults
+      ? "empty-search"
+      : filteredPosts.length === 0
+        ? "empty-filters"
+        : "posts";
+
   return (
     <div className="space-y-5">
       <Toolbar
@@ -76,13 +84,43 @@ export function BlogContent({ posts }: BlogContentProps) {
         onClearFilters={clearFilters}
       />
 
-      {hasQuery && !hasSearchResults ? (
-        <EmptySearchState onClear={() => setQuery("")} />
-      ) : filteredPosts.length === 0 ? (
-        <EmptySearchState onClear={clearFilters} />
-      ) : (
-        <PostList posts={filteredPosts} />
-      )}
+      <AnimatePresence mode="wait">
+        {contentKey === "empty-search" && (
+          <motion.div
+            key="empty-search"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            <EmptySearchState onClear={() => setQuery("")} />
+          </motion.div>
+        )}
+
+        {contentKey === "empty-filters" && (
+          <motion.div
+            key="empty-filters"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            <EmptySearchState onClear={clearFilters} />
+          </motion.div>
+        )}
+
+        {contentKey === "posts" && (
+          <motion.div
+            key="posts"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <PostList posts={filteredPosts} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
