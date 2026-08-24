@@ -6,6 +6,7 @@ import { EyeIcon, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { Spinner } from "@/components/ui/spinner";
 
 type PostStats = {
   views: number;
@@ -146,10 +147,8 @@ export function PostActions({ slug }: PostActionsProps) {
 
   if (isInitializing || !stats) {
     return (
-      <div
-        className="flex items-center gap-3 border-y border-border/40 py-4"
-        aria-live="polite"
-      >
+      <div className="flex flex-row items-center gap-3 py-4" aria-live="polite">
+        <Spinner />
         <p className="text-sm text-muted-foreground">Loading statistics...</p>
       </div>
     );
