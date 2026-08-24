@@ -328,7 +328,7 @@ If you find an issue or have an idea for improving the project, feel free to ope
 
 For PR structure and descriptions, see the in-blog guide:
 
-**How to Write a Great Pull Request**
+[**How to Write a Great Pull Request**](./content/posts/pull-request-guide.mdx)
 
 ---
 
