@@ -1,34 +1,56 @@
 "use client";
 
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { SearchIcon, SlidersHorizontalIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
+
+import type {
+  PostFilterState,
+  PostSortOption,
+} from "../_hooks/use-post-filters";
+
+import { ToolbarFilters } from "./toolbar-filters";
 
 type ToolbarProps = {
   query: string;
   onQueryChange: (query: string) => void;
+
+  filters: PostFilterState;
+  availableTags: string[];
+  hasActiveFilters: boolean;
+
+  onSortChange: (sort: PostSortOption) => void;
+  onDateFromChange: (date: string) => void;
+  onDateToChange: (date: string) => void;
+  onReadingTimeMinChange: (value: number | null) => void;
+  onReadingTimeMaxChange: (value: number | null) => void;
+  onTagToggle: (tag: string) => void;
+  onClearFilters: () => void;
 };
 
 /**
- * Provides search and filtering controls for the blog listing.
+ * Renders the blog toolbar.
  *
- * Search state is controlled by the parent interactive layer so this
- * component remains focused exclusively on rendering the toolbar UI.
+ * The toolbar is intentionally controlled by its parent. It does not
+ * own search or filter state, keeping business logic outside the UI layer.
  */
-export function Toolbar({ query, onQueryChange }: ToolbarProps) {
+export function Toolbar({
+  query,
+  onQueryChange,
+  filters,
+  availableTags,
+  hasActiveFilters,
+  onSortChange,
+  onDateFromChange,
+  onDateToChange,
+  onReadingTimeMinChange,
+  onReadingTimeMaxChange,
+  onTagToggle,
+  onClearFilters,
+}: ToolbarProps) {
   return (
     <div className="flex flex-row justify-between gap-2">
       <InputGroup className="bg-background">
@@ -45,40 +67,18 @@ export function Toolbar({ query, onQueryChange }: ToolbarProps) {
         </InputGroupAddon>
       </InputGroup>
 
-      <Drawer swipeDirection="right" modal={false}>
-        <DrawerTrigger>
-          <Button
-            type="button"
-            variant="ghost"
-            className="text-muted-foreground"
-          >
-            <SlidersHorizontalIcon size={16} aria-hidden="true" />
-            Filter
-          </Button>
-        </DrawerTrigger>
-
-        <DrawerContent>
-          <div className="mx-auto w-full max-w-sm">
-            <DrawerHeader>
-              <DrawerTitle className="font-normal">Filter Posts</DrawerTitle>
-            </DrawerHeader>
-
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Post filters will be available here.
-              </p>
-            </div>
-
-            <DrawerFooter>
-              <DrawerClose>
-                <Button type="button" variant="outline">
-                  Close
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <ToolbarFilters
+        filters={filters}
+        availableTags={availableTags}
+        hasActiveFilters={hasActiveFilters}
+        onSortChange={onSortChange}
+        onDateFromChange={onDateFromChange}
+        onDateToChange={onDateToChange}
+        onReadingTimeMinChange={onReadingTimeMinChange}
+        onReadingTimeMaxChange={onReadingTimeMaxChange}
+        onTagToggle={onTagToggle}
+        onClear={onClearFilters}
+      />
     </div>
   );
 }
