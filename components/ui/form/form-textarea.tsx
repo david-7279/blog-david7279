@@ -16,7 +16,7 @@ interface FormTextareaProps {
 
 /**
  * Reusable form textarea built on top of the application's
- * Field and Textarea components.
+ * Field and Textarea _components.
  *
  * Responsibilities:
  * - Renders the field label and required indicator.

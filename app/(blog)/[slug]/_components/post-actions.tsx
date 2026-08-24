@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, ThumbsUp } from "lucide-react";
+import { EyeIcon, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ export function PostActions({ slug }: PostActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-4 border-y border-border/40 py-4">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Eye className="h-4 w-4" aria-hidden="true" />
+        <EyeIcon className="h-4 w-4" aria-hidden="true" />
 
         <span>
           {stats.views} {stats.views === 1 ? "view" : "views"}

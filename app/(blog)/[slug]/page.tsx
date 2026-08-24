@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
 
-import { PostActions } from "./components/post-actions";
-import { PostContent } from "./components/post-content";
-import { PostHeader } from "./components/post-header";
+import { PostActions } from "@/app/(blog)/[slug]/_components/post-actions";
+import { PostContent } from "@/app/(blog)/[slug]/_components/post-content";
+import { PostHeader } from "@/app/(blog)/[slug]/_components/post-header";
 
 type PostPageProps = {
   params: Promise<{

@@ -1,4 +1,4 @@
-// components/nav/nav-bar-wrapper.tsx
+// _components/nav/nav-bar-wrapper.tsx
 "use client";
 
 import React, { useState, useEffect, ReactNode } from "react";

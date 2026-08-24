@@ -17,7 +17,7 @@ interface FormInputProps {
 
 /**
  * Reusable form input built on top of the application's
- * Field and Input components.
+ * Field and Input _components.
  *
  * Responsibilities:
  * - Renders the field label and required indicator.

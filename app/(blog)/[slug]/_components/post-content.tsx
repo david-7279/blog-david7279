@@ -25,7 +25,7 @@ function getHeadingId(children: React.ReactNode): string {
 }
 
 /**
- * Custom MDX heading components.
+ * Custom MDX heading _components.
  *
  * Explicit heading IDs allow the table of contents and anchor links
  * to navigate directly to sections within the article.
