@@ -1,12 +1,17 @@
-"use client";
+import type { PostWithStats } from "@/lib/posts/types";
 
 import { PostCard } from "@/app/(blog)/_components/post-card";
-import { PostWithStats } from "@/lib/posts/types";
 
 type PostListProps = {
   posts: PostWithStats[];
 };
 
+/**
+ * Renders the collection of published blog posts.
+ *
+ * This component remains a Server Component because it does not require
+ * client-side state, effects, browser APIs, or event handlers.
+ */
 export function PostList({ posts }: PostListProps) {
   return (
     <div className="space-y-4">

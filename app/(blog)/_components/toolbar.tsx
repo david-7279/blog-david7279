@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+"use client";
+
 import {
   Drawer,
   DrawerClose,
@@ -8,46 +9,70 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { SearchIcon, SlidersHorizontalIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { SearchIcon, SlidersHorizontalIcon } from "lucide-react";
 
-const Toolbar = () => {
+type ToolbarProps = {
+  query: string;
+  onQueryChange: (query: string) => void;
+};
+
+/**
+ * Provides search and filtering controls for the blog listing.
+ *
+ * Search state is controlled by the parent interactive layer so this
+ * component remains focused exclusively on rendering the toolbar UI.
+ */
+export function Toolbar({ query, onQueryChange }: ToolbarProps) {
   return (
     <div className="flex flex-row justify-between gap-2">
       <InputGroup className="bg-background">
-        <InputGroupInput placeholder="Search for a article..." />
+        <InputGroupInput
+          type="search"
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Search for an article..."
+          aria-label="Search articles"
+        />
+
         <InputGroupAddon>
-          <SearchIcon />
+          <SearchIcon aria-hidden="true" />
         </InputGroupAddon>
       </InputGroup>
 
       <Drawer swipeDirection="right" modal={false}>
         <DrawerTrigger>
-          <Button variant="ghost" className="text-muted-foreground">
-            <SlidersHorizontalIcon size={16} />
+          <Button
+            type="button"
+            variant="ghost"
+            className="text-muted-foreground"
+          >
+            <SlidersHorizontalIcon size={16} aria-hidden="true" />
             Filter
           </Button>
         </DrawerTrigger>
+
         <DrawerContent>
           <div className="mx-auto w-full max-w-sm">
             <DrawerHeader>
-              <DrawerTitle className="font-normal">
-                Please login again.
-              </DrawerTitle>
+              <DrawerTitle className="font-normal">Filter Posts</DrawerTitle>
             </DrawerHeader>
-            <p className="text-muted-foreground p-4">
-              Your session has expired. Please login again to continue using the
-              application.
-            </p>
+
+            <div className="p-4">
+              <p className="text-sm text-muted-foreground">
+                Post filters will be available here.
+              </p>
+            </div>
+
             <DrawerFooter>
-              <Button type="submit">Login</Button>
               <DrawerClose>
                 <Button type="button" variant="outline">
-                  Cancel
+                  Close
                 </Button>
               </DrawerClose>
             </DrawerFooter>
@@ -56,5 +81,4 @@ const Toolbar = () => {
       </Drawer>
     </div>
   );
-};
-export default Toolbar;
+}

@@ -1,26 +1,35 @@
-import { getAllPostsWithStats } from "@/lib/posts";
-import { PostList } from "./_components/post-list";
-import { EmptyState } from "./_components/empty-state";
-import Toolbar from "@/app/(blog)/_components/toolbar";
+import type { Metadata } from "next";
 
-export const metadata = {
+import { getAllPostsWithStats } from "@/lib/posts";
+
+import { BlogContent } from "./_components/blog-content";
+import { EmptyState } from "./_components/empty-state";
+
+export const metadata: Metadata = {
   title: "Blog",
   description: "Articles about technology and development.",
 };
 
+/**
+ * Renders the blog index page.
+ *
+ * Post data is fetched on the server and passed to the client-side
+ * blog content layer, where interactive search and filtering are handled.
+ */
 export default async function BlogPage() {
   const posts = await getAllPostsWithStats();
 
+  if (posts.length === 0) {
+    return (
+      <main className="pb-24">
+        <EmptyState />
+      </main>
+    );
+  }
+
   return (
     <main className="pb-24">
-      {posts.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="space-y-5">
-          <Toolbar />
-          <PostList posts={posts} />
-        </div>
-      )}
+      <BlogContent posts={posts} />
     </main>
   );
 }
