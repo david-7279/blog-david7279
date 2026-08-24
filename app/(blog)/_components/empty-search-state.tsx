@@ -1,5 +1,3 @@
-import { NotebookPenIcon } from "lucide-react";
-
 import {
   Empty,
   EmptyContent,
@@ -9,14 +7,19 @@ import {
 } from "@/components/ui/empty";
 import { Marquee } from "@/components/ui/marquee";
 import { RollingTextButton } from "@/components/ui/rolling-text-button";
+import { SearchIcon, SearchXIcon, XIcon } from "lucide-react";
+
+type EmptySearchStateProps = {
+  onClear: () => void;
+};
 
 /**
- * Renders the empty state displayed when the blog has no published posts.
+ * Displays an empty state when a search query does not match any posts.
  *
- * The component provides a lightweight visual placeholder while directing
- * visitors to GitHub for project updates and future content.
+ * Unlike the default blog empty state, this component represents an empty
+ * search result rather than an empty blog.
  */
-export function EmptyState() {
+export function EmptySearchState({ onClear }: EmptySearchStateProps) {
   return (
     <div className="px-6 py-10">
       <div className="mx-auto max-w-sm pt-0">
@@ -25,7 +28,7 @@ export function EmptyState() {
             <div className="mask-y-from-60% mask-x-from-95% mb-3 w-full max-w-xs space-y-2">
               <Marquee className="h-56 [--duration:2s]" repeat={5} vertical>
                 <div className="flex w-full items-center gap-3 rounded-lg border px-4 py-3">
-                  <NotebookPenIcon
+                  <SearchXIcon
                     className="shrink-0 fill-muted text-muted-foreground/70"
                     aria-hidden="true"
                   />
@@ -43,19 +46,20 @@ export function EmptyState() {
               </Marquee>
             </div>
 
-            <EmptyTitle>No Posts Yet</EmptyTitle>
+            <EmptyTitle>No Posts Found</EmptyTitle>
 
             <EmptyDescription>
-              Still writing the first posts… meanwhile, follow me on GitHub to
-              stay in the loop with the project.
+              Try adjusting your search or filter to find what you're looking
+              for.
             </EmptyDescription>
           </EmptyHeader>
 
           <EmptyContent>
             <div className="flex flex-wrap gap-2 *:mx-auto">
               <RollingTextButton
-                href="https://github.com/david-7279"
-                title="GitHub"
+                title="Clear search"
+                icon={XIcon}
+                onClick={onClear}
                 className="w-full rounded-[12px]"
               />
             </div>
