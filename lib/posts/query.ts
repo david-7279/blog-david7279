@@ -1,12 +1,13 @@
-import { db, posts, postStats } from "@/lib/db";
 import { eq, inArray } from "drizzle-orm";
 
+import { db, postStats, posts } from "@/lib/db";
 import type { PostStat } from "@/lib/db/schema";
 
 /**
- * Get statistics for a single post.
+ * Retrieves engagement statistics for a single post.
  *
- * The post itself is identified by its database ID.
+ * @param postId - Database ID of the post.
+ * @returns The post statistics, or undefined when no record exists.
  */
 export async function getPostStats(
   postId: number,
@@ -17,10 +18,10 @@ export async function getPostStats(
 }
 
 /**
- * Get statistics for multiple posts in one query.
+ * Retrieves statistics for multiple posts in a single database query.
  *
- * Used to avoid N+1 database queries when rendering
- * lists of posts.
+ * Returning a Map keyed by post ID makes lookups O(1) when enriching
+ * post collections and prevents N+1 database queries.
  */
 export async function getStatsForPostIds(
   postIds: number[],
@@ -37,10 +38,14 @@ export async function getStatsForPostIds(
 }
 
 /**
- * Get statistics for multiple posts by their slugs.
+ * Retrieves statistics for multiple posts using their slugs.
  *
- * This requires a join with the posts table and is useful
- * when the application works primarily with MDX slugs.
+ * Slugs are the primary identifier used by the content layer, while
+ * post IDs are internal database identifiers. The join bridges those
+ * two representations without requiring one query per post.
+ *
+ * Missing statistics are normalized to zero so consumers can safely
+ * render engagement metrics without additional null checks.
  */
 export async function getStatsForSlugs(slugs: string[]): Promise<
   Map<

@@ -1,9 +1,11 @@
-export type Heading = {
-  id: string;
-  text: string;
-  level: number;
-};
+import { Heading } from "@/lib/posts/types";
 
+/**
+ * Converts heading text into a URL-safe identifier.
+ *
+ * The generated identifier is intentionally deterministic so that
+ * the same Markdown heading always produces the same base ID.
+ */
 function slugifyHeading(text: string): string {
   return text
     .toLowerCase()
@@ -15,13 +17,17 @@ function slugifyHeading(text: string): string {
 }
 
 /**
- * Extracts h2 and h3 headings from Markdown/MDX content.
+ * Extracts H2 and H3 headings from Markdown/MDX content.
  *
- * Duplicate headings receive a numeric suffix:
+ * Heading IDs are generated from their text and made unique when
+ * duplicate headings are present:
  *
- * "hello-world"
- * "hello-world-2"
- * "hello-world-3"
+ *   "hello-world"
+ *   "hello-world-2"
+ *   "hello-world-3"
+ *
+ * The parser intentionally targets H2/H3 headings only because these
+ * levels are used to build the post table of contents.
  */
 export function extractHeadings(content: string): Heading[] {
   const headingRegex = /^(#{2,3})\s+(.+?)\s*#*\s*$/gm;
@@ -34,6 +40,7 @@ export function extractHeadings(content: string): Heading[] {
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length;
 
+    // Remove JSX/MDX attributes such as `{#custom-id}` from heading text.
     const text = match[2].replace(/\{[^}]*\}/g, "").trim();
 
     if (!text) {

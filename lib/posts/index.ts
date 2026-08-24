@@ -1,42 +1,73 @@
-import { readdir, readFile, access } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
-import type { Post, PostMeta, PostWithStats } from "./types";
-import { getStatsForSlugs } from "./query";
 
-const postsDirectory = path.join(process.cwd(), "content/posts");
+import { getStatsForSlugs } from "./query";
+import type { Post, PostMeta, PostWithStats } from "./types";
+
+const POSTS_DIRECTORY = path.join(process.cwd(), "content/posts");
+
+const DEFAULT_AUTHOR = "David Vieira";
 
 /**
- * Normalizes the tags value from MDX frontmatter.
+ * Normalizes the tags field from MDX frontmatter.
+ *
+ * Invalid or missing values are treated as an empty tag list so that
+ * consumers never need to handle undefined tags.
  */
 function parseTags(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((tag): tag is string => typeof tag === "string");
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(
+    (tag): tag is string => typeof tag === "string" && tag.trim() !== "",
+  );
 }
 
 /**
- * Normalizes the author value from MDX frontmatter.
+ * Normalizes the author field from MDX frontmatter.
+ *
+ * A default author is used when the frontmatter does not provide one.
  */
 function parseAuthor(value: unknown): string {
-  return typeof value === "string" ? value : "David Vieira";
-}
-
-/**
- * Normalizes the date value from MDX frontmatter.
- */
-function parseDate(value: unknown): string {
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
   if (typeof value === "string" && value.trim() !== "") {
     return value;
   }
+
+  return DEFAULT_AUTHOR;
+}
+
+/**
+ * Normalizes the publication date from MDX frontmatter.
+ *
+ * Gray-matter may return a Date instance depending on the frontmatter
+ * parser. Both Date objects and strings are supported here.
+ *
+ * Invalid or missing dates fall back to the current timestamp.
+ */
+function parseDate(value: unknown): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "string" && value.trim() !== "") {
+    const date = new Date(value);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+
   return new Date().toISOString();
 }
 
 /**
- * Checks if a path exists.
+ * Checks whether a filesystem path exists.
+ *
+ * File system access errors are intentionally normalized to `false`
+ * because callers only need to know whether the path is available.
  */
 async function pathExists(filePath: string): Promise<boolean> {
   try {
@@ -48,16 +79,21 @@ async function pathExists(filePath: string): Promise<boolean> {
 }
 
 /**
- * Parses a single MDX post.
- * The MDX file remains the source of truth.
+ * Parses an MDX file into the application's post domain model.
+ *
+ * MDX remains the source of truth for post content and metadata.
  */
 async function parsePost(filename: string): Promise<Post> {
   const slug = filename.replace(/\.mdx$/, "");
-  const fullPath = path.join(postsDirectory, filename);
+  const fullPath = path.join(POSTS_DIRECTORY, filename);
+
   const fileContents = await readFile(fullPath, "utf8");
   const { data, content } = matter(fileContents);
 
-  const minutes = Math.max(1, Math.ceil(readingTime(content).minutes));
+  const readingTimeMinutes = Math.max(
+    1,
+    Math.ceil(readingTime(content).minutes),
+  );
 
   return {
     slug,
@@ -67,38 +103,48 @@ async function parsePost(filename: string): Promise<Post> {
     tags: parseTags(data.tags),
     published: typeof data.published === "boolean" ? data.published : true,
     author: parseAuthor(data.author),
-    readingTime: minutes,
+    readingTime: readingTimeMinutes,
     content,
   };
 }
 
 /**
- * Returns all published posts (metadata only).
+ * Returns all published posts without their MDX content.
+ *
+ * Content is intentionally removed from the returned objects because
+ * listing pages only require metadata and should not carry unnecessary
+ * MDX payloads.
  */
 export async function getAllPosts(): Promise<PostMeta[]> {
-  if (!(await pathExists(postsDirectory))) {
+  if (!(await pathExists(POSTS_DIRECTORY))) {
     return [];
   }
 
-  const entries = await readdir(postsDirectory, { withFileTypes: true });
+  const entries = await readdir(POSTS_DIRECTORY, {
+    withFileTypes: true,
+  });
 
-  const files = entries
+  const filenames = entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
     .map((entry) => entry.name);
 
-  const posts = await Promise.all(files.map((filename) => parsePost(filename)));
+  const posts = await Promise.all(
+    filenames.map((filename) => parsePost(filename)),
+  );
 
   return posts
     .filter((post) => post.published)
-    .map(({ content: _content, ...post }) => post)
+    .map(({ content: _content, ...metadata }) => metadata)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /**
- * Returns a published post by slug (with content).
+ * Returns a published post by its slug.
+ *
+ * The slug is validated before constructing the filesystem path to
+ * prevent path traversal outside the posts directory.
  */
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  // Prevent path traversal
   if (
     !slug ||
     slug.includes("..") ||
@@ -109,7 +155,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 
   const filename = `${slug}.mdx`;
-  const fullPath = path.join(postsDirectory, filename);
+  const fullPath = path.join(POSTS_DIRECTORY, filename);
 
   if (!(await pathExists(fullPath))) {
     return null;
@@ -117,16 +163,14 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 
   const post = await parsePost(filename);
 
-  if (!post.published) {
-    return null;
-  }
-
-  return post;
+  return post.published ? post : null;
 }
 
 /**
- * Returns all published posts with their statistics.
- * Uses a single query to avoid N+1.
+ * Returns all published posts enriched with engagement statistics.
+ *
+ * Statistics are fetched in a single database query to avoid N+1
+ * database access when rendering a post collection.
  */
 export async function getAllPostsWithStats(): Promise<PostWithStats[]> {
   const allPosts = await getAllPosts();
@@ -136,16 +180,16 @@ export async function getAllPostsWithStats(): Promise<PostWithStats[]> {
   }
 
   const slugs = allPosts.map((post) => post.slug);
-  const stats = await getStatsForSlugs(slugs);
+  const statsBySlug = await getStatsForSlugs(slugs);
 
   return allPosts.map((post) => {
-    const postStats = stats.get(post.slug);
+    const stats = statsBySlug.get(post.slug);
 
     return {
       ...post,
-      views: postStats?.views ?? 0,
-      upvotes: postStats?.upvotes ?? 0,
-      downvotes: postStats?.downvotes ?? 0,
+      views: stats?.views ?? 0,
+      upvotes: stats?.upvotes ?? 0,
+      downvotes: stats?.downvotes ?? 0,
     };
   });
 }
