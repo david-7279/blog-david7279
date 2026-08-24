@@ -17,8 +17,8 @@ const Footer = () => {
         <Link href={paths.home}>
           <Text3DFlip
             className="bg-transparent"
-            textClassName="bg-transparent text-foreground text-xl sm:text-2xl font-semibold tracking-tight"
-            flipTextClassName="bg-transparent text-foreground text-xl sm:text-2xl font-semibold tracking-tight"
+            textClassName="bg-transparent text-foreground text-base font-semibold tracking-tight"
+            flipTextClassName="bg-transparent text-foreground text-base font-semibold tracking-tight"
             rotateDirection="top"
           >
             Blog
