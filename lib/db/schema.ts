@@ -1,152 +1,279 @@
 import { sql } from "drizzle-orm";
 import {
   check,
-  index,
   integer,
   pgTable,
-  serial,
   text,
   timestamp,
-  uuid,
+  uniqueIndex,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 /**
- * Post Statistics Table
+ * Posts
  *
- * Stores engagement metrics for blog posts
- * - Views: tracked via user IP + 24h cooldown (not implemented here, see docs)
- * - Votes: upvotes/downvotes with client-side deduplication
- * - Soft delete: deletedAt allows data recovery
+ * Stores the metadata and publication state of blog posts.
  *
- * Indexes optimized for:
- * - Single post lookup (slug)
- * - Active posts queries (partial index)
- * - Ordering by recency
+ * The actual article content can remain in MDX files tracked by Git.
  *
- * Constraints ensure:
- * - No negative counts
- * - Non-empty slugs
- * - Immutable creation date
+ * Responsibilities:
+ * - Public URL slug
+ * - SEO metadata
+ * - Publication date
+ * - Lifecycle timestamps
+ *
+ * The database is intentionally NOT responsible for storing the MDX content.
+ */
+export const posts = pgTable(
+  "posts",
+  {
+    /**
+     * Internal database identifier.
+     *
+     * Uses PostgreSQL IDENTITY instead of the legacy SERIAL type.
+     */
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+
+    /**
+     * Public URL identifier.
+     *
+     * Example:
+     * "building-my-first-startup"
+     */
+    slug: varchar("slug", {
+      length: 255,
+    }).notNull(),
+
+    /**
+     * Post title.
+     */
+    title: varchar("title", {
+      length: 255,
+    }).notNull(),
+
+    /**
+     * Short description used for:
+     * - Blog cards
+     * - SEO description
+     * - Open Graph metadata
+     */
+    description: text("description"),
+
+    /**
+     * Publication timestamp.
+     *
+     * NULL means the post has not been published yet.
+     */
+    publishedAt: timestamp("published_at", {
+      withTimezone: true,
+    }),
+
+    /**
+     * Record creation timestamp.
+     */
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    /**
+     * Last metadata update timestamp.
+     */
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+
+  (table) => [
+    /**
+     * A slug must be unique because it is used as
+     * the public URL of the post.
+     */
+    uniqueIndex("posts_slug_unique").on(table.slug),
+  ],
+);
+
+/**
+ * Post statistics
+ *
+ * Stores aggregate engagement metrics for a post.
+ *
+ * The counters are intentionally kept separate from the
+ * actual post entity.
  */
 export const postStats = pgTable(
   "post_stats",
   {
-    // Primary key - internal, sequential
-    // Used only for internal references, never exposed in API
-    id: serial("id").primaryKey(),
+    /**
+     * Internal database identifier.
+     */
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
 
-    // Public identifier - UUID for external references
-    // Prevents sequential ID enumeration attacks
-    uuid: uuid("uuid")
-      .defaultRandom()
+    /**
+     * Related post.
+     *
+     * One post has exactly one statistics record.
+     *
+     * CASCADE ensures that statistics are automatically
+     * removed if the post itself is permanently deleted.
+     */
+    postId: integer("post_id")
       .notNull()
-      .unique("post_stats_uuid_unique"),
+      .references(() => posts.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
 
-    // URL-friendly slug identifier
-    // Immutable, used in URLs, max 255 chars for efficiency
-    slug: text("slug").notNull().unique("post_stats_slug_unique"),
-
-    // Page views count
-    // Incremented on page view (with rate limiting to prevent spam)
-    // Default 0, cannot be negative
+    /**
+     * Total page views.
+     *
+     * Must never be negative.
+     */
     views: integer("views").default(0).notNull(),
 
-    // Upvotes count
-    // Incremented when user clicks thumbs up
-    // Default 0, cannot be negative
+    /**
+     * Total upvotes.
+     *
+     * Must never be negative.
+     */
     upvotes: integer("upvotes").default(0).notNull(),
 
-    // Downvotes count
-    // Incremented when user clicks thumbs down
-    // Default 0, cannot be negative
+    /**
+     * Total downvotes.
+     *
+     * Must never be negative.
+     */
     downvotes: integer("downvotes").default(0).notNull(),
 
-    // Created timestamp with timezone
-    // Set on first insert, immutable
-    createdAt: timestamp("created_at", { withTimezone: true })
+    /**
+     * Statistics creation timestamp.
+     */
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
       .defaultNow()
       .notNull(),
-
-    // Updated timestamp with timezone
-    // Auto-updated on any row change
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdate(() => new Date()),
-
-    // Soft delete timestamp
-    // NULL = active post
-    // Set to timestamp = deleted post (can be recovered)
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
 
-  // Indexes and constraints
   (table) => [
-    // ============================================
-    // INDEXES (for query performance)
-    // ============================================
+    /**
+     * One statistics record per post.
+     *
+     * This also creates an efficient index for:
+     *
+     * WHERE post_id = ?
+     */
+    uniqueIndex("post_stats_post_id_unique").on(table.postId),
 
-    // Fast lookup by slug (used in most queries)
-    // Query: SELECT * FROM post_stats WHERE slug = 'my-post'
-    // Impact: O(log n) instead of O(n) full table scan
-    index("post_stats_slug_idx").on(table.slug),
+    /**
+     * Data integrity constraints.
+     */
+    check("post_stats_views_non_negative", sql`${table.views} >= 0`),
 
-    // Fast queries for deleted posts
-    // Query: SELECT * FROM post_stats WHERE deleted_at IS NOT NULL
-    // Impact: Efficient recovery/cleanup queries
-    index("post_stats_deleted_at_idx").on(table.deletedAt),
+    check("post_stats_upvotes_non_negative", sql`${table.upvotes} >= 0`),
 
-    // Optimized for "get active posts sorted by updated"
-    // Query: SELECT * FROM post_stats WHERE deleted_at IS NULL ORDER BY updated_at DESC
-    // Impact: PARTIAL INDEX = smaller + faster (only indexes active records)
-    // This is the most common query pattern
-    index("post_stats_active_posts_idx")
-      .on(table.deletedAt, table.updatedAt)
-      .where(sql`${table.deletedAt} IS NULL`),
-
-    // ============================================
-    // CONSTRAINTS (for data integrity)
-    // ============================================
-
-    // Views must never be negative
-    // Catches application bugs at database level
-    check("views_non_negative", sql`${table.views} >= 0`),
-
-    // Upvotes must never be negative
-    // Prevents data corruption from API errors
-    check("upvotes_non_negative", sql`${table.upvotes} >= 0`),
-
-    // Downvotes must never be negative
-    // Maintains data consistency
-    check("downvotes_non_negative", sql`${table.downvotes} >= 0`),
-
-    // Slug must not be empty string
-    // Prevents accidental empty slug creation
-    check("slug_not_empty", sql`length(${table.slug}) > 0`),
+    check("post_stats_downvotes_non_negative", sql`${table.downvotes} >= 0`),
   ],
 );
 
-// ============================================
-// TYPES (exported for TypeScript)
-// ============================================
+/**
+ * Post votes
+ *
+ * Stores individual visitor votes.
+ *
+ * This table is optional from a UI perspective but important
+ * if votes need server-side deduplication.
+ *
+ * A visitor can only have one active vote per post.
+ */
+export const postVotes = pgTable(
+  "post_votes",
+  {
+    /**
+     * Internal database identifier.
+     */
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+
+    /**
+     * Related post.
+     */
+    postId: integer("post_id")
+      .notNull()
+      .references(() => posts.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+
+    /**
+     * Anonymous visitor identifier.
+     *
+     * This should NOT contain the raw IP address.
+     *
+     * Store a server-generated / privacy-preserving
+     * identifier instead.
+     */
+    visitorId: varchar("visitor_id", {
+      length: 128,
+    }).notNull(),
+
+    /**
+     * Vote type.
+     *
+     *  1 = upvote
+     * -1 = downvote
+     */
+    vote: integer("vote").notNull(),
+
+    /**
+     * Vote creation timestamp.
+     */
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    /**
+     * Last time this visitor changed their vote.
+     */
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+
+  (table) => [
+    /**
+     * Prevents the same visitor from creating
+     * multiple vote records for the same post.
+     */
+    uniqueIndex("post_votes_post_visitor_unique").on(
+      table.postId,
+      table.visitorId,
+    ),
+
+    /**
+     * Vote can only be:
+     *
+     *  1  → upvote
+     * -1  → downvote
+     */
+    check("post_votes_valid_vote", sql`${table.vote} IN (-1, 1)`),
+  ],
+);
 
 /**
- * Type-safe representation of a post stat record
- * Use this in your queries and API responses
+ * Type-safe database types.
  */
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = typeof posts.$inferInsert;
+
 export type PostStat = typeof postStats.$inferSelect;
-
-/**
- * Type-safe representation for inserting new post stats
- * uuid, createdAt, updatedAt are auto-generated
- */
 export type InsertPostStat = typeof postStats.$inferInsert;
 
-/**
- * Extended type for API responses
- * Includes calculated fields like engagement score
- */
-export type PostStatWithEngagement = PostStat & {
-  engagementScore: number;
-  totalVotes: number;
-};
+export type PostVote = typeof postVotes.$inferSelect;
+export type InsertPostVote = typeof postVotes.$inferInsert;
