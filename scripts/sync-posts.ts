@@ -9,73 +9,116 @@ import { db, posts } from "@/lib/db";
 const POSTS_DIR = path.join(process.cwd(), "content/posts");
 
 function parseDate(value: unknown): Date | null {
-  if (value instanceof Date) return value;
-  if (typeof value === "string" && value.trim() !== "") {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
+  if (value instanceof Date) {
+    return value;
   }
+
+  if (typeof value === "string" && value.trim() !== "") {
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
   return null;
 }
 
-async function syncPosts() {
-  console.log("🔄 A sincronizar posts com a base de dados...");
+async function syncPosts(): Promise<void> {
+  console.log("🔄 Syncing posts with the database...");
 
   const files = await readdir(POSTS_DIR);
-  const mdxFiles = files.filter((f) => f.endsWith(".mdx"));
+  const mdxFiles = files.filter((file) => file.endsWith(".mdx"));
 
   if (mdxFiles.length === 0) {
-    console.log("Nenhum ficheiro .mdx encontrado.");
+    console.log("⚠️ No .mdx files found.");
     return;
   }
+
+  console.log(`📄 Found ${mdxFiles.length} post(s).`);
+
+  let created = 0;
+  let updated = 0;
+  let failed = 0;
 
   for (const file of mdxFiles) {
     const slug = file.replace(/\.mdx$/, "");
     const fullPath = path.join(POSTS_DIR, file);
-    const raw = await readFile(fullPath, "utf-8");
-    const { data } = matter(raw);
 
-    const title = typeof data.title === "string" ? data.title : slug;
-    const description =
-      typeof data.description === "string" ? data.description : null;
+    try {
+      const raw = await readFile(fullPath, "utf-8");
+      const { data } = matter(raw);
 
-    // Mapeamento: published (boolean) + date → publishedAt (timestamp | null)
-    const isPublished =
-      typeof data.published === "boolean" ? data.published : true;
-    const date = parseDate(data.date);
-    const publishedAt = isPublished && date ? date : null;
+      const title =
+        typeof data.title === "string" && data.title.trim() !== ""
+          ? data.title
+          : slug;
 
-    const existing = await db.query.posts.findFirst({
-      where: eq(posts.slug, slug),
-    });
+      const description =
+        typeof data.description === "string" && data.description.trim() !== ""
+          ? data.description
+          : null;
 
-    if (existing) {
-      await db
-        .update(posts)
-        .set({
+      // Map published + date to publishedAt.
+      const isPublished =
+        typeof data.published === "boolean" ? data.published : true;
+
+      const date = parseDate(data.date);
+      const publishedAt = isPublished && date ? date : null;
+
+      const existing = await db.query.posts.findFirst({
+        where: eq(posts.slug, slug),
+      });
+
+      if (existing) {
+        await db
+          .update(posts)
+          .set({
+            title,
+            description,
+            publishedAt,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.slug, slug));
+
+        updated++;
+        console.log(`✅ Updated: ${slug}`);
+      } else {
+        await db.insert(posts).values({
+          slug,
           title,
           description,
           publishedAt,
-          updatedAt: new Date(),
-        })
-        .where(eq(posts.slug, slug));
+        });
 
-      console.log(`✅ Atualizado: ${slug}`);
-    } else {
-      await db.insert(posts).values({
-        slug,
-        title,
-        description,
-        publishedAt,
-      });
+        created++;
+        console.log(`🆕 Created: ${slug}`);
+      }
+    } catch (error) {
+      failed++;
 
-      console.log(`🆕 Criado: ${slug}`);
+      console.error(`❌ Failed to sync: ${slug}`);
+      console.error(error);
     }
   }
 
-  console.log("✨ Sincronização concluída!");
+  console.log("\n✨ Post synchronization completed.");
+  console.log(`   Created: ${created}`);
+  console.log(`   Updated: ${updated}`);
+  console.log(`   Failed:  ${failed}`);
+
+  if (failed > 0) {
+    throw new Error(`${failed} post(s) failed to synchronize.`);
+  }
 }
 
-syncPosts().catch((err) => {
-  console.error("❌ Erro ao sincronizar posts:", err);
-  process.exit(1);
-});
+async function main(): Promise<void> {
+  try {
+    await syncPosts();
+  } catch (error) {
+    console.error("\n❌ Post synchronization failed.");
+    console.error(error);
+
+    process.exitCode = 1;
+  }
+}
+
+void main();
