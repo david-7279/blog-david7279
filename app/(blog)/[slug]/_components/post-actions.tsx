@@ -5,6 +5,8 @@ import { EyeIcon, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
+import { Spinner } from "@/components/ui/spinner";
 
 type PostStats = {
   views: number;
@@ -145,43 +147,96 @@ export function PostActions({ slug }: PostActionsProps) {
 
   if (isInitializing || !stats) {
     return (
-      <div
-        className="flex items-center gap-3 border-y border-border/40 py-4"
-        aria-live="polite"
-      >
+      <div className="flex flex-row items-center gap-3 py-4" aria-live="polite">
+        <Spinner />
         <p className="text-sm text-muted-foreground">Loading statistics...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4 border-y border-border/40 py-4">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <EyeIcon className="h-4 w-4" aria-hidden="true" />
+    <AnimatePresence mode="wait">
+      {isInitializing || !stats ? (
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex items-center gap-3"
+          aria-live="polite"
+        >
+          <div className="h-4 w-16 animate-pulse rounded-md bg-muted" />
+          <div className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="stats"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-wrap items-center gap-3"
+        >
+          {/* Views */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-2 py-1 text-sm text-muted-foreground">
+            <EyeIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="tabular-nums tracking-tight">{stats.views}</span>
+            <span className="text-muted-foreground/80">
+              {stats.views === 1 ? "view" : "views"}
+            </span>
+          </div>
 
-        <span>
-          {stats.views} {stats.views === 1 ? "view" : "views"}
-        </span>
-      </div>
+          {/* Upvote */}
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 400, damping: 22 }}
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isVoting}
+              aria-pressed={stats.voted}
+              aria-label={
+                stats.voted ? "Remove your upvote" : "Upvote this post"
+              }
+              onClick={handleUpvote}
+              className={cn(
+                "gap-2 rounded-full px-3.5 transition-colors duration-200",
+                stats.voted ? "border-primary" : "",
+              )}
+            >
+              <motion.span
+                key={stats.voted ? "voted" : "idle"}
+                initial={{ scale: 0.8, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 24 }}
+                className="inline-flex"
+              >
+                <ThumbsUp
+                  className={cn(
+                    "size-3.5 shrink-0",
+                    stats.voted ? "text-foreground" : "text-muted-foreground",
+                  )}
+                  aria-hidden="true"
+                />
+              </motion.span>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={isVoting}
-        aria-pressed={stats.voted}
-        aria-label={stats.voted ? "Remove your upvote" : "Upvote this post"}
-        onClick={handleUpvote}
-        className={cn(
-          "gap-2 transition-colors",
-          stats.voted &&
-            "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:text-white",
-        )}
-      >
-        <ThumbsUp className="h-4 w-4" aria-hidden="true" />
-
-        <span>{stats.upvotes}</span>
-      </Button>
-    </div>
+              <motion.span
+                key={stats.upvotes}
+                initial={{ y: 4, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.18 }}
+                className="tabular-nums tracking-tight"
+              >
+                {stats.upvotes}
+              </motion.span>
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
