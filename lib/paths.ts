@@ -6,7 +6,7 @@ export const paths = {
   // Dashboard
   dashboard: "/dashboard",
 
-  // Auth (preparado para o futuro)
+  // Auth
   auth: {
     root: "/auth",
     login: "/auth/login",
@@ -17,7 +17,7 @@ export const paths = {
   terms: "/terms",
   privacy: "/privacy",
 
-  // Admin / Backoffice (preparado para o futuro)
+  // Admin / Backoffice
   admin: {
     root: "/admin",
     dashboard: "/admin/dashboard",
@@ -26,5 +26,4 @@ export const paths = {
   },
 } as const;
 
-// Tipo helper (opcional mas útil)
 export type AppPath = typeof paths;
