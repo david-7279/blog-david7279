@@ -61,9 +61,7 @@ export function ToolbarFiltersSort({
 
   return (
     <div className="space-y-1.5">
-      <p id={`${id}-label`} className="text-xs text-muted-foreground">
-        Sort by
-      </p>
+      <p className="mb-2 text-xs text-muted-foreground">Sort by</p>
 
       <Select value={selectValue} onValueChange={handleChange}>
         <SelectTrigger

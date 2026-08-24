@@ -28,6 +28,7 @@ import { ToolbarFiltersSort } from "@/app/(blog)/_components/toolbar/toolbar-fil
 import type { PostFilterState } from "@/app/(blog)/_hooks/use-post-filters";
 import type { PostReadingTimeRange } from "@/app/(blog)/_hooks/use-post-filter-range";
 import type { PostSortOption } from "@/app/(blog)/_hooks/use-post-filter-sort";
+import { ToolbarFiltersTag } from "@/app/(blog)/_components/toolbar/toolbar-filters-tag";
 
 type ToolbarFiltersProps = {
   filters: PostFilterState;
@@ -85,11 +86,9 @@ export function ToolbarFilters({
             <DrawerTitle>Filter Articles</DrawerTitle>
           </DrawerHeader>
 
-          <div className="space-y-6 overflow-y-auto px-4 pb-4">
+          <div className="space-y-8 overflow-y-auto px-4 pb-4 pt-4">
             {/* Sort */}
-            <section>
-              <ToolbarFiltersSort value={sort} onChange={onSortChange} />
-            </section>
+            <ToolbarFiltersSort value={sort} onChange={onSortChange} />
 
             {/* Publication date */}
             <section className="space-y-3">
@@ -117,46 +116,22 @@ export function ToolbarFilters({
             </section>
 
             {/* Reading time */}
-            <section>
-              <ToolbarFiltersRange
-                value={[readingTimeRange.min ?? 1, readingTimeRange.max ?? 60]}
-                onChange={([min, max]) =>
-                  onReadingTimeRangeChange({
-                    min,
-                    max,
-                  })
-                }
-              />
-            </section>
+            <ToolbarFiltersRange
+              value={[readingTimeRange.min ?? 1, readingTimeRange.max ?? 60]}
+              onChange={([min, max]) =>
+                onReadingTimeRangeChange({
+                  min,
+                  max,
+                })
+              }
+            />
 
             {/* Tags */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <TagsIcon size={16} aria-hidden="true" />
-
-                <h3 className="text-sm font-medium">Tags</h3>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => {
-                  const selected = selectedTags.includes(tag);
-
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => onTagToggle(tag)}
-                      aria-pressed={selected}
-                      className="cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Badge variant={selected ? "default" : "secondary"}>
-                        {tag}
-                      </Badge>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
+            <ToolbarFiltersTag
+              availableTags={availableTags}
+              selectedTags={selectedTags}
+              onTagToggle={onTagToggle}
+            />
           </div>
 
           <DrawerFooter>
