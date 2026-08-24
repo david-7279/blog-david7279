@@ -1,10 +1,8 @@
 "use client";
 
 import type { PostWithStats } from "@/lib/posts/types";
-
 import { usePostSearch } from "../_hooks/use-post-search";
 import { usePostFilters } from "../_hooks/use-post-filters";
-
 import { PostList } from "./post-list";
 import { Toolbar } from "./toolbar";
 import { EmptySearchState } from "@/app/(blog)/_components/empty-search-state";
@@ -14,29 +12,13 @@ type BlogContentProps = {
   posts: PostWithStats[];
 };
 
-/**
- * Coordinates the interactive blog listing.
- *
- * Search, filtering, and sorting state are managed by dedicated hooks.
- * This component coordinates those concerns and determines which UI
- * state should be rendered.
- */
 export function BlogContent({ posts }: BlogContentProps) {
-  /**
-   * Search is applied first so that subsequent filters operate only
-   * on posts matching the user's query.
-   */
   const {
     query,
     setQuery,
     filteredPosts: searchedPosts,
-  } = usePostSearch({
-    posts,
-  });
+  } = usePostSearch({ posts });
 
-  /**
-   * Filters and sorting operate on the search result.
-   */
   const {
     filters,
     sort,
@@ -58,12 +40,25 @@ export function BlogContent({ posts }: BlogContentProps) {
   const hasQuery = query.trim().length > 0;
   const hasSearchResults = searchedPosts.length > 0;
 
+  const filterSignature = [
+    sort,
+    filters.dateFrom,
+    filters.dateTo,
+    readingTimeRange.min,
+    readingTimeRange.max,
+    selectedTags.slice().sort().join(","),
+  ].join("|");
+
+  const postsKey = hasActiveFilters
+    ? `posts-filtered-${filterSignature}`
+    : "posts-all";
+
   const contentKey =
     hasQuery && !hasSearchResults
       ? "empty-search"
       : filteredPosts.length === 0
         ? "empty-filters"
-        : "posts";
+        : postsKey;
 
   return (
     <div className="space-y-5">
@@ -85,37 +80,37 @@ export function BlogContent({ posts }: BlogContentProps) {
       />
 
       <AnimatePresence mode="wait">
-        {contentKey === "empty-search" && (
+        {contentKey.startsWith("empty-search") && (
           <motion.div
             key="empty-search"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.28, ease: "easeInOut" }}
           >
             <EmptySearchState onClear={() => setQuery("")} />
           </motion.div>
         )}
 
-        {contentKey === "empty-filters" && (
+        {contentKey.startsWith("empty-filters") && (
           <motion.div
             key="empty-filters"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.28, ease: "easeInOut" }}
           >
             <EmptySearchState onClear={clearFilters} />
           </motion.div>
         )}
 
-        {contentKey === "posts" && (
+        {contentKey.startsWith("posts") && (
           <motion.div
-            key="posts"
-            initial={{ opacity: 0, y: 12 }}
+            key={contentKey} // ← agora muda no clear
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
             <PostList posts={filteredPosts} />
           </motion.div>
