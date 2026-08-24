@@ -1,6 +1,6 @@
 "use client";
 
-import { PostCard } from "@/app/(blog)/_components/post-card";
+import { PostCard } from "@/app/(blog)/[slug]/components/post-card";
 import { PostWithStats } from "@/lib/posts/types";
 
 type PostListProps = {

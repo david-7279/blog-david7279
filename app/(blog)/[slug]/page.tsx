@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
-import { PostHeader } from "../_components/post-header";
-import { PostActions } from "../_components/post-actions";
-import { PostContent } from "../_components/post-content";
+import { PostHeader } from "./components/post-header";
+import { PostActions } from "./components/post-actions";
+import { PostContent } from "./components/post-content";
 
 type Props = {
   params: Promise<{ slug: string }>;
