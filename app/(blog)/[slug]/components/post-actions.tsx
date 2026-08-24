@@ -1,104 +1,186 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Eye, ThumbsUp } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Stats = {
+type PostStats = {
   views: number;
   upvotes: number;
-  voted?: boolean;
+  voted: boolean;
 };
 
 type PostActionsProps = {
   slug: string;
 };
 
+const VIEW_STORAGE_PREFIX = "blog:viewed:";
+
+/**
+ * Builds the localStorage key used to track whether this browser
+ * has already registered a view for the specified post.
+ *
+ * View tracking is intentionally browser-based and should not be
+ * treated as authoritative analytics.
+ */
+function getViewStorageKey(slug: string): string {
+  return `${VIEW_STORAGE_PREFIX}${slug}`;
+}
+
+/**
+ * Fetches the current post engagement statistics.
+ *
+ * The upvote endpoint also returns the current visitor's vote state,
+ * which allows the UI to render the correct button state.
+ */
+async function fetchPostStats(slug: string): Promise<PostStats> {
+  const response = await fetch(`/api/upvote/${encodeURIComponent(slug)}`, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch post statistics: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export function PostActions({ slug }: PostActionsProps) {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<PostStats | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
 
   useEffect(() => {
-    async function init() {
-      const viewKey = `viewed:${slug}`;
-      const alreadyViewed = localStorage.getItem(viewKey);
+    let cancelled = false;
 
-      // Incrementa view uma vez por browser
-      if (!alreadyViewed) {
-        await fetch("/api/views", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug }),
-        });
-        localStorage.setItem(viewKey, "1");
-      }
+    async function initialize() {
+      try {
+        const viewStorageKey = getViewStorageKey(slug);
+        const hasViewed = localStorage.getItem(viewStorageKey) === "1";
 
-      // Stats atuais
-      const res = await fetch(`/api/upvote/${slug}`);
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
+        /**
+         * Register one view per browser for this post.
+         *
+         * The server remains responsible for the actual counter update.
+         * localStorage only prevents repeated requests from the same
+         * browser during the local tracking window.
+         */
+        if (!hasViewed) {
+          const response = await fetch(
+            `/api/views/${encodeURIComponent(slug)}`,
+            {
+              method: "POST",
+              cache: "no-store",
+            },
+          );
+
+          if (response.ok) {
+            localStorage.setItem(viewStorageKey, "1");
+          }
+        }
+
+        /**
+         * Fetch the latest statistics after attempting to register
+         * the view so the UI reflects the most recent counter value.
+         */
+        const latestStats = await fetchPostStats(slug);
+
+        if (!cancelled) {
+          setStats(latestStats);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to initialize post actions:", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsInitializing(false);
+        }
       }
     }
 
-    init();
+    void initialize();
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
-  async function handleUpvote() {
-    if (loading || !stats) return;
-    setLoading(true);
+  /**
+   * Toggles the current visitor's upvote.
+   *
+   * The server is the source of truth for the resulting statistics
+   * and vote state. The client simply replaces its local state with
+   * the server response.
+   */
+  async function handleUpvote(): Promise<void> {
+    if (isVoting || !stats) {
+      return;
+    }
+
+    setIsVoting(true);
 
     try {
-      const res = await fetch(`/api/upvote/${slug}`, {
+      const response = await fetch(`/api/upvote/${encodeURIComponent(slug)}`, {
         method: "POST",
+        cache: "no-store",
       });
 
-      if (!res.ok) return;
+      if (!response.ok) {
+        throw new Error(`Failed to toggle upvote: ${response.status}`);
+      }
 
-      const data = await res.json();
-      setStats({
-        views: data.views,
-        upvotes: data.upvotes,
-        voted: data.voted,
-      });
+      const updatedStats: PostStats = await response.json();
+
+      setStats(updatedStats);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to toggle post upvote:", error);
     } finally {
-      setLoading(false);
+      setIsVoting(false);
     }
   }
 
-  if (!stats) {
+  if (isInitializing || !stats) {
     return (
-      <div className="flex items-center gap-3 py-4">
-        <p className="text-sm text-muted-foreground">
-          A carregar estatísticas...
-        </p>
+      <div
+        className="flex items-center gap-3 border-y border-border/40 py-4"
+        aria-live="polite"
+      >
+        <p className="text-sm text-muted-foreground">Loading statistics...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4 py-4 border-y border-border/40">
+    <div className="flex flex-wrap items-center gap-4 border-y border-border/40 py-4">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Eye className="h-4 w-4" />
-        <span>{stats.views} views</span>
+        <Eye className="h-4 w-4" aria-hidden="true" />
+
+        <span>
+          {stats.views} {stats.views === 1 ? "view" : "views"}
+        </span>
       </div>
 
       <Button
+        type="button"
         variant="outline"
         size="sm"
-        disabled={loading}
+        disabled={isVoting}
+        aria-pressed={stats.voted}
+        aria-label={stats.voted ? "Remove your upvote" : "Upvote this post"}
         onClick={handleUpvote}
         className={cn(
           "gap-2 transition-colors",
           stats.voted &&
-            "bg-green-600 text-white border-green-600 hover:bg-green-700 hover:text-white",
+            "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:text-white",
         )}
       >
-        <ThumbsUp className="h-4 w-4" />
-        {stats.upvotes}
+        <ThumbsUp className="h-4 w-4" aria-hidden="true" />
+
+        <span>{stats.upvotes}</span>
       </Button>
     </div>
   );
