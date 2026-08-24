@@ -2,13 +2,13 @@
 
 import {
   CalendarDaysIcon,
-  Clock3Icon,
   ListFilterIcon,
   RotateCcwIcon,
   TagsIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
 import {
   Drawer,
   DrawerClose,
@@ -19,32 +19,27 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-import type {
-  PostFilterState,
-  PostSortOption,
-} from "../_hooks/use-post-filters";
+import { ToolbarFiltersRange } from "@/app/(blog)/_components/toolbar/toolbar-filters-range";
+import { ToolbarFiltersSort } from "@/app/(blog)/_components/toolbar/toolbar-filters-sort";
+
+import type { PostFilterState } from "@/app/(blog)/_hooks/use-post-filters";
+import type { PostReadingTimeRange } from "@/app/(blog)/_hooks/use-post-filter-range";
+import type { PostSortOption } from "@/app/(blog)/_hooks/use-post-filter-sort";
 
 type ToolbarFiltersProps = {
   filters: PostFilterState;
+  sort: PostSortOption;
+  readingTimeRange: PostReadingTimeRange;
   availableTags: string[];
+  selectedTags: string[];
   hasActiveFilters: boolean;
-
   onSortChange: (sort: PostSortOption) => void;
   onDateFromChange: (date: string) => void;
   onDateToChange: (date: string) => void;
-  onReadingTimeMinChange: (value: number | null) => void;
-  onReadingTimeMaxChange: (value: number | null) => void;
+  onReadingTimeRangeChange: (range: PostReadingTimeRange) => void;
   onTagToggle: (tag: string) => void;
   onClear: () => void;
 };
@@ -52,18 +47,20 @@ type ToolbarFiltersProps = {
 /**
  * Renders the blog filtering controls.
  *
- * This component is intentionally presentation-focused. Filter state
- * and filtering logic are managed by `usePostFilters`.
+ * This component is intentionally presentation-focused. State and
+ * filtering behavior are owned by the dedicated filter hooks.
  */
 export function ToolbarFilters({
   filters,
+  sort,
+  readingTimeRange,
   availableTags,
+  selectedTags,
   hasActiveFilters,
   onSortChange,
   onDateFromChange,
   onDateToChange,
-  onReadingTimeMinChange,
-  onReadingTimeMaxChange,
+  onReadingTimeRangeChange,
   onTagToggle,
   onClear,
 }: ToolbarFiltersProps) {
@@ -82,7 +79,7 @@ export function ToolbarFilters({
         </Button>
       </DrawerTrigger>
 
-      <DrawerContent>
+      <DrawerContent className="bg-background shadow-sm">
         <div className="mx-auto w-full max-w-md">
           <DrawerHeader>
             <DrawerTitle>Filter Articles</DrawerTitle>
@@ -90,34 +87,11 @@ export function ToolbarFilters({
 
           <div className="space-y-6 overflow-y-auto px-4 pb-4">
             {/* Sort */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <ListFilterIcon size={16} aria-hidden="true" />
-
-                <h3 className="text-sm font-medium">Sort by</h3>
-              </div>
-
-              <Select
-                value={filters.sort}
-                onValueChange={(value) => onSortChange(value as PostSortOption)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-
-                  <SelectItem value="oldest">Oldest</SelectItem>
-
-                  <SelectItem value="votes">Most votes</SelectItem>
-
-                  <SelectItem value="title">Title A–Z</SelectItem>
-                </SelectContent>
-              </Select>
+            <section>
+              <ToolbarFiltersSort value={sort} onChange={onSortChange} />
             </section>
 
-            {/* Date range */}
+            {/* Publication date */}
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <CalendarDaysIcon size={16} aria-hidden="true" />
@@ -143,40 +117,16 @@ export function ToolbarFilters({
             </section>
 
             {/* Reading time */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Clock3Icon size={16} aria-hidden="true" />
-
-                <h3 className="text-sm font-medium">Reading time</h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  type="number"
-                  min={1}
-                  placeholder="Min"
-                  value={filters.readingTimeMin ?? ""}
-                  onChange={(event) =>
-                    onReadingTimeMinChange(
-                      event.target.value ? Number(event.target.value) : null,
-                    )
-                  }
-                  aria-label="Minimum reading time"
-                />
-
-                <Input
-                  type="number"
-                  min={1}
-                  placeholder="Max"
-                  value={filters.readingTimeMax ?? ""}
-                  onChange={(event) =>
-                    onReadingTimeMaxChange(
-                      event.target.value ? Number(event.target.value) : null,
-                    )
-                  }
-                  aria-label="Maximum reading time"
-                />
-              </div>
+            <section>
+              <ToolbarFiltersRange
+                value={[readingTimeRange.min ?? 1, readingTimeRange.max ?? 60]}
+                onChange={([min, max]) =>
+                  onReadingTimeRangeChange({
+                    min,
+                    max,
+                  })
+                }
+              />
             </section>
 
             {/* Tags */}
@@ -189,7 +139,7 @@ export function ToolbarFilters({
 
               <div className="flex flex-wrap gap-2">
                 {availableTags.map((tag) => {
-                  const selected = filters.tags.includes(tag);
+                  const selected = selectedTags.includes(tag);
 
                   return (
                     <button
@@ -197,7 +147,7 @@ export function ToolbarFilters({
                       type="button"
                       onClick={() => onTagToggle(tag)}
                       aria-pressed={selected}
-                      className="cursor-pointer"
+                      className="cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Badge variant={selected ? "default" : "secondary"}>
                         {tag}

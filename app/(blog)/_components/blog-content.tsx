@@ -5,24 +5,25 @@ import type { PostWithStats } from "@/lib/posts/types";
 import { usePostSearch } from "../_hooks/use-post-search";
 import { usePostFilters } from "../_hooks/use-post-filters";
 
-import { EmptySearchState } from "./empty-search-state";
 import { PostList } from "./post-list";
 import { Toolbar } from "./toolbar";
+import { EmptySearchState } from "@/app/(blog)/_components/empty-search-state";
 
 type BlogContentProps = {
   posts: PostWithStats[];
 };
 
 /**
- * Orchestrates the interactive blog listing.
+ * Coordinates the interactive blog listing.
  *
- * Search and filter state live at this level so that the toolbar and
- * result list remain controlled, reusable presentation components.
+ * Search, filtering, and sorting state are managed by dedicated hooks.
+ * This component coordinates those concerns and determines which UI
+ * state should be rendered.
  */
 export function BlogContent({ posts }: BlogContentProps) {
   /**
-   * Search is applied first so that filtering and sorting operate only
-   * on the articles matching the user's query.
+   * Search is applied first so that subsequent filters operate only
+   * on posts matching the user's query.
    */
   const {
     query,
@@ -33,17 +34,19 @@ export function BlogContent({ posts }: BlogContentProps) {
   });
 
   /**
-   * Additional filters and sorting are applied to the search results.
+   * Filters and sorting operate on the search result.
    */
   const {
     filters,
+    sort,
+    readingTimeRange,
     filteredPosts,
     availableTags,
+    selectedTags,
     setSort,
     setDateFrom,
     setDateTo,
-    setReadingTimeMin,
-    setReadingTimeMax,
+    setReadingTimeRange,
     toggleTag,
     clearFilters,
     hasActiveFilters,
@@ -52,7 +55,7 @@ export function BlogContent({ posts }: BlogContentProps) {
   });
 
   const hasQuery = query.trim().length > 0;
-  const hasSearchResults = filteredPosts.length > 0;
+  const hasSearchResults = searchedPosts.length > 0;
 
   return (
     <div className="space-y-5">
@@ -60,19 +63,23 @@ export function BlogContent({ posts }: BlogContentProps) {
         query={query}
         onQueryChange={setQuery}
         filters={filters}
+        sort={sort}
+        readingTimeRange={readingTimeRange}
         availableTags={availableTags}
+        selectedTags={selectedTags}
         hasActiveFilters={hasActiveFilters}
         onSortChange={setSort}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
-        onReadingTimeMinChange={setReadingTimeMin}
-        onReadingTimeMaxChange={setReadingTimeMax}
+        onReadingTimeRangeChange={setReadingTimeRange}
         onTagToggle={toggleTag}
         onClearFilters={clearFilters}
       />
 
       {hasQuery && !hasSearchResults ? (
         <EmptySearchState onClear={() => setQuery("")} />
+      ) : filteredPosts.length === 0 ? (
+        <EmptySearchState onClear={clearFilters} />
       ) : (
         <PostList posts={filteredPosts} />
       )}
