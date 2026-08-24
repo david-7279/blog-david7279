@@ -1,6 +1,7 @@
 import { getAllPostsWithStats } from "@/lib/posts";
 import { PostList } from "./_components/post-list";
 import { EmptyState } from "./_components/empty-state";
+import Toolbar from "@/app/(blog)/_components/toolbar";
 
 export const metadata = {
   title: "Blog",
@@ -12,7 +13,14 @@ export default async function BlogPage() {
 
   return (
     <main className="pb-24">
-      {posts.length === 0 ? <EmptyState /> : <PostList posts={posts} />}
+      {posts.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="space-y-5">
+          <Toolbar />
+          <PostList posts={posts} />
+        </div>
+      )}
     </main>
   );
 }
