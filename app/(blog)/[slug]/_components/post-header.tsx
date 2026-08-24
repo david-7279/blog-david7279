@@ -54,6 +54,10 @@ export function PostHeader({ post }: PostHeaderProps) {
             className="flex flex-col gap-3"
           >
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              {post.author ? <span>{post.author}</span> : null}
+              <span className="text-border" aria-hidden="true">
+                ·
+              </span>
               <time dateTime={post.date} className="tabular-nums">
                 {formatDate(post.date)}
               </time>
@@ -61,14 +65,6 @@ export function PostHeader({ post }: PostHeaderProps) {
                 ·
               </span>
               <span>{post.readingTime} min read</span>
-              {post.author ? (
-                <>
-                  <span className="text-border" aria-hidden="true">
-                    ·
-                  </span>
-                  <span>{post.author}</span>
-                </>
-              ) : null}
             </div>
 
             {post.tags.length > 0 && (
