@@ -134,17 +134,18 @@ export function ToolbarFilters({
             />
           </div>
 
-          <DrawerFooter>
+          <DrawerFooter className="flex flex-col gap-2 mt-4">
             {hasActiveFilters && (
-              <Button type="button" variant="ghost" onClick={onClear}>
+              <Button
+                className="w-full"
+                type="button"
+                variant="outline"
+                onClick={onClear}
+              >
                 <RotateCcwIcon size={16} aria-hidden="true" />
                 Clear filters
               </Button>
             )}
-
-            <DrawerClose>
-              <Button type="button">Apply filters</Button>
-            </DrawerClose>
           </DrawerFooter>
         </div>
       </DrawerContent>
