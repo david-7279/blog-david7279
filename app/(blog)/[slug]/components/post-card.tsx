@@ -1,21 +1,17 @@
-// components/post-card.tsx
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { PostMeta } from "@/lib/posts";
+import type { PostWithStats } from "@/lib/posts/types";
 import { paths } from "@/lib/paths";
 import { formatDate } from "@/lib/format-date";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Clock,
   ClockIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   FlagIcon,
   Share2Icon,
-  ThumbsUp,
   ThumbsUpIcon,
 } from "lucide-react";
 import { RollingTextButton } from "@/components/ui/rolling-text-button";
@@ -30,17 +26,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { Separator } from "@/components/ui/separator";
-import * as React from "react";
-import { PostWithStats } from "@/lib/posts/types";
 
 type PostCardProps = {
   post: PostWithStats;
-};
-
-type Stats = {
-  views: number;
-  upvotes: number;
-  downvotes: number;
 };
 
 async function copyArticleLink(slug: string) {
@@ -48,7 +36,6 @@ async function copyArticleLink(slug: string) {
 
   try {
     await navigator.clipboard.writeText(url);
-
     const id = toast.add({
       title: "Article copied",
       description: "Share with everyone how is gonna be interesting",
@@ -58,7 +45,7 @@ async function copyArticleLink(slug: string) {
         },
       },
     });
-  } catch (err) {
+  } catch {
     const textArea = document.createElement("textarea");
     textArea.value = url;
     textArea.style.position = "fixed";
@@ -89,27 +76,6 @@ async function copyArticleLink(slug: string) {
 }
 
 export function PostCard({ post }: PostCardProps) {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`/api/stats/${post.slug}`);
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [post.slug]);
-
   return (
     <Link href={paths.post(post.slug)} className="block">
       <Card className="border-border shadow-xs rounded-[32px] bg-card py-2.5">
@@ -206,8 +172,8 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
 
+            {/* Stats */}
             <div className="flex flex-row items-center gap-3">
-              {/* Likes */}
               <div className="flex items-center gap-1">
                 <ThumbsUpIcon size={16} className="text-muted-foreground" />
                 <NumberTicker
@@ -218,12 +184,11 @@ export function PostCard({ post }: PostCardProps) {
 
               <Separator orientation="vertical" />
 
-              {/* Read Time */}
               <div className="flex items-center gap-1">
                 <ClockIcon size={16} className="text-muted-foreground" />
                 <NumberTicker
                   value={post.readingTime}
-                  className="text-sm text-muted-foreground tracking-tighter whitespace-pre-wrap"
+                  className="text-sm text-muted-foreground tracking-tighter"
                 />
                 <p className="text-sm text-muted-foreground">min read</p>
               </div>
