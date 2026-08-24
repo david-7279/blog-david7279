@@ -49,9 +49,14 @@ export function BlogContent({ posts }: BlogContentProps) {
     selectedTags.slice().sort().join(","),
   ].join("|");
 
-  const postsKey = hasActiveFilters
-    ? `posts-filtered-${filterSignature}`
-    : "posts-all";
+  const searchSignature = query.trim().toLocaleLowerCase();
+
+  const postsKey =
+    hasQuery || hasActiveFilters
+      ? `posts-${hasQuery ? `q-${searchSignature}` : "q-none"}-${
+          hasActiveFilters ? `f-${filterSignature}` : "f-none"
+        }`
+      : "posts-all";
 
   const contentKey =
     hasQuery && !hasSearchResults
@@ -106,7 +111,7 @@ export function BlogContent({ posts }: BlogContentProps) {
 
         {contentKey.startsWith("posts") && (
           <motion.div
-            key={contentKey} // ← agora muda no clear
+            key={contentKey}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
