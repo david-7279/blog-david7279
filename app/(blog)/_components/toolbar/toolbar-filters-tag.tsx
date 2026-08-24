@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 type ToolbarFiltersTagProps = {
   availableTags: string[];
@@ -31,10 +31,14 @@ export function ToolbarFiltersTag({
               className="cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.92 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              animate={{
+                scale: selected ? 1.02 : 1,
+                opacity: 1,
+              }}
+              transition={{ type: "spring", stiffness: 320, damping: 22 }}
             >
               <Badge
-                className="rounded-lg px-2.5 py-3"
+                className="rounded-lg px-2.5 py-3 transition-colors duration-200"
                 variant={selected ? "default" : "outline"}
               >
                 {tag}

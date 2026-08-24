@@ -90,31 +90,6 @@ export function ToolbarFilters({
             {/* Sort */}
             <ToolbarFiltersSort value={sort} onChange={onSortChange} />
 
-            {/* Publication date */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <CalendarDaysIcon size={16} aria-hidden="true" />
-
-                <h3 className="text-sm font-medium">Publication date</h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  type="date"
-                  value={filters.dateFrom}
-                  onChange={(event) => onDateFromChange(event.target.value)}
-                  aria-label="Published from"
-                />
-
-                <Input
-                  type="date"
-                  value={filters.dateTo}
-                  onChange={(event) => onDateToChange(event.target.value)}
-                  aria-label="Published until"
-                />
-              </div>
-            </section>
-
             {/* Reading time */}
             <ToolbarFiltersRange
               value={[readingTimeRange.min ?? 1, readingTimeRange.max ?? 60]}

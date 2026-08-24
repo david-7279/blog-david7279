@@ -50,17 +50,39 @@ export function useFormContact() {
    */
   const onSubmit = async (values: ContactFormValues): Promise<void> => {
     try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || CONTACT_ERROR);
+      }
+
+      form.reset();
+      toast.add({
+        title: "Message sent",
+        description: "Thanks for reaching out! I’ll get back to you soon.",
+        type: "success",
+      });
     } catch (error) {
       console.error("useFormContact: contact form submission failed", error);
 
+      const message = error instanceof Error ? error.message : CONTACT_ERROR;
+
       form.setError("root", {
         type: "server",
-        message: error instanceof Error ? error.message : CONTACT_ERROR,
+        message,
       });
 
       toast.add({
         title: "Error submitting contact form",
-        description: error instanceof Error ? error.message : CONTACT_ERROR,
+        description: message,
         type: "error",
       });
     }
@@ -68,7 +90,6 @@ export function useFormContact() {
 
   return {
     ...form,
-
     onSubmit,
     isSubmitting: form.formState.isSubmitting,
     serverError: form.formState.errors.root?.message ?? null,
