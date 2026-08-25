@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format-date";
 import type { PostMeta } from "@/lib/posts";
 import { AnimatePresence, motion } from "motion/react";
+import { Separator } from "@/components/ui/separator";
 
 type PostHeaderProps = {
   post: PostMeta;
@@ -55,15 +56,11 @@ export function PostHeader({ post }: PostHeaderProps) {
           >
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               {post.author ? <span>{post.author}</span> : null}
-              <span className="text-border" aria-hidden="true">
-                ·
-              </span>
+              <span aria-hidden="true">•</span>
               <time dateTime={post.date} className="tabular-nums">
                 {formatDate(post.date)}
               </time>
-              <span className="text-border" aria-hidden="true">
-                ·
-              </span>
+              <span aria-hidden="true">•</span>
               <span>{post.readingTime} min read</span>
             </div>
 
@@ -82,7 +79,7 @@ export function PostHeader({ post }: PostHeaderProps) {
                   >
                     <Badge
                       variant="secondary"
-                      className="rounded-full px-2.5 py-0.5 text-xs font-normal"
+                      className="h-6 rounded-lg px-2.5 py-1 text-xs font-normal"
                     >
                       {tag}
                     </Badge>
