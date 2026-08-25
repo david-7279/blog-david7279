@@ -158,7 +158,7 @@ Without context, reviewers waste time trying to understand your changes.
 
 If you've made a choice that might seem unusual, explain it:
 
-> "This pattern looks unconventional, but it prevents the race condition we saw in production last month."
+> This pattern looks unconventional, but it prevents the race condition we saw in production last month.
 
 These comments help reviewers understand your reasoning and serve as documentation for future developers.
 
@@ -214,14 +214,13 @@ Remember: feedback is about the code, not about you personally.
 
 Research from analyzing thousands of PRs shows clear patterns:
 
-```markdown
 | PR Size       | Review Time    | Risk Level | Recommendation         |
 |---------------|----------------|------------|------------------------|
 | < 100 lines   | ~10 minutes    | Low        | Excellent              |
 | 100-400 lines | ~30-60 minutes | Medium     | Good                   |
 | 400-800 lines | ~1-2 hours     | High       | Avoid                  |
 | 800+ lines    | 2+ hours       | Very High  | Split into smaller PRs |
-```
+
 **The One-Hour Rule:** Your PR should take no more than one hour to review. If it takes longer, break it into smaller
 PRs.
 
@@ -378,7 +377,6 @@ Reviewers are busy. If no response in 7 days, a polite follow-up is fine. Don't 
 
 ## Common Mistakes to Avoid
 
-```markdown
 | Mistake                  | Why It's a Problem                     | How to Fix                                   |
 |--------------------------|----------------------------------------|----------------------------------------------|
 | Vague PR titles          | Reviewers don't understand the purpose | Write clear, descriptive titles with context |
@@ -388,7 +386,6 @@ Reviewers are busy. If no response in 7 days, a polite follow-up is fine. Don't 
 | Ignoring feedback        | Slows down merging                     | Engage with reviewers professionally         |
 | Massive PRs              | Overwhelms reviewers                   | Break into smaller, manageable PRs           |
 | Outdated branches        | Causes merge conflicts                 | Keep branch synced with main                 |
-```
 
 ---
 
