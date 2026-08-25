@@ -6,10 +6,15 @@ Personal blog built with Next.js — focused on clean design, fast reading, and 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[//]: # (**[Live Demo]&#40;https://your-blog-url.com&#41;** · **[Portfolio]&#40;https://david7279.vercel.app&#41;**)
+**[Live Demo](https://blog-david7279.vercel.app/)**
 
-[//]: # ()
-[//]: # (![Blog Preview]&#40;./public/images/blog-preview.png&#41;)
+### Home Page Preview
+
+![Home Page](./public/images/home-page.png)
+
+### Blog Preview
+
+![Blog Preview](./public/images/blog-preview.png)
 
 ---
 
