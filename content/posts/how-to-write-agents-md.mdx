@@ -1,0 +1,680 @@
+---
+title: "How to Write AGENTS.md: Complete Guide to AI Agent Instruction Files"
+description: "Learn how to write effective AGENTS.md files that improve AI agent task success by 4% and reduce bugs by 35-55%. Includes best practices, examples, and a complete template."
+date: "2026-08-25"
+tags: [ "AI Agents", "Documentation", "Best Practices", "Development", "Context Engineering" ]
+published: true
+author: "David Vieira"
+---
+
+AI coding agents like Claude Code, Cursor, GitHub Copilot, and Devin start each session blind to your project's
+conventions. They don't know which flags your build commands require, what files should never be modified, or your
+specific coding style rules.
+
+That's where **AGENTS.md** comes in.
+
+An AGENTS.md file is a machine-readable instruction set placed at your repository root. It tells agents exactly what
+they can do, what they must ask permission for, and what they absolutely cannot touch. Research across 2,500+
+repositories shows developer-written AGENTS.md files improve task success by roughly 4% and reduce agent-generated bugs
+by 35-55%.
+
+This guide walks you through every section, shows you what works (and what doesn't), and includes a production-ready
+template you can use today.
+
+---
+
+## Why AGENTS.md Matters (And Why Most Teams Get It Wrong)
+
+Before you write a single line, understand this: **AGENTS.md is not documentation for humans—it's a runtime instruction
+set for machines.**
+
+Every token you waste on principles the agent already knows from training increases inference costs by 20-23% with zero
+quality benefit. A study from ETH Zurich tested hundreds of repositories and found that **LLM-generated AGENTS.md files
+actually performed worse than no file at all** in 5 out of 8 tested scenarios.
+
+The pattern was clear: teams either wrote nothing, or they auto-generated bloated files that duplicated README content
+and wasted context window space.
+
+### The Numbers
+
+- **Developer-written files:** ~4% improvement in task success
+- **LLM-generated files:** -0.5% to -2% reduction in task success
+- **Inference cost overhead:** +20-23% (applies regardless of quality)
+- **Bug reduction (well-written files):** 35-55%
+
+The key insight: **human curation matters more than presence.** A tightly written 100-line AGENTS.md written by someone
+who knows the project beats a bloated 400-line auto-generated file every time.
+
+---
+
+## What AGENTS.md Actually Is
+
+Think of AGENTS.md as a **README for AI agents**, not humans.
+
+| Aspect          | README.md                            | AGENTS.md                           |
+|-----------------|--------------------------------------|-------------------------------------|
+| **Audience**    | Human developers                     | AI agents                           |
+| **Content**     | Project overview, how to get started | Commands, boundaries, code patterns |
+| **Tone**        | Educational, welcoming               | Direct, executable, specific        |
+| **Length**      | Flexible                             | Under 150 lines (optimal)           |
+| **Duplication** | OK to be comprehensive               | Fatal flaw; wastes tokens           |
+| **Purpose**     | Help humans understand               | Constrain agent behavior            |
+
+A well-written AGENTS.md tells an agent:
+
+- What exact commands to run (with full flags)
+- Which files it can modify autonomously
+- Which changes require asking first
+- What it must absolutely never do
+- How your code should be styled (with examples, not prose)
+- What tests must pass before committing
+
+It does NOT tell the agent:
+
+- General software engineering principles ("write clean code")
+- Anything already in your README
+- Architectural overviews ("we use microservices")
+- Anything the agent can infer from the codebase itself
+
+---
+
+## The Seven-Step Framework
+
+Here's the structured approach to writing AGENTS.md that works:
+
+### Step 1: Choose Your File Placement
+
+Start with a single AGENTS.md at your repository root. This covers the entire project.
+
+```
+repository-root/
+├── AGENTS.md          # Single source of truth
+├── src/
+├── tests/
+└── ...
+```
+
+**Only add subdirectory files if you have genuinely different agent contexts.** For example, a monorepo might have:
+
+```
+repository-root/
+├── AGENTS.md          # Root: org-wide standards
+├── apps/
+│   ├── web/
+│   │   └── AGENTS.md  # Web-specific overrides (optional)
+│   └── api/
+│       └── AGENTS.md  # API-specific overrides (optional)
+```
+
+**Common mistake:** Creating a massive root file trying to cover every possible scenario. Start lean. Add subdirectory
+overrides only when they're genuinely needed.
+
+**Validation checklist:**
+
+- [ ] AGENTS.md exists at repository root
+- [ ] File is under 150 lines
+- [ ] If subdirectories have their own files, root documents this hierarchy
+- [ ] File is tracked in git
+
+---
+
+### Step 2: Write the Commands Section (Highest ROI)
+
+This is where you get the most return on investment. Agents already know that npm, pytest, and cargo exist. They don't
+know your project's specific flags, environment requirements, or CI/CD distinctions.
+
+**Bad:**
+
+```markdown
+# Build
+
+Run npm build to compile the project.
+
+# Test
+
+Run tests with npm test.
+
+# Lint
+
+Run linting with npm lint.
+```
+
+**Good:**
+
+```markdown
+## Key Commands
+
+# Install dependencies
+
+npm install
+
+# Start development server (localhost:3000)
+
+npm run dev
+
+# Build for production
+
+npm run build
+
+# Type check without building
+
+npm run typecheck
+
+# Lint code (ESLint)
+
+npm run lint
+
+# Format code (Prettier)
+
+npm run format
+
+# Run tests (Vitest, Node.js only)
+
+npm run test
+
+# Run tests in watch mode
+
+npm run test:watch
+
+# Generate test coverage
+
+npm run test:coverage
+
+# Validate all: lint, typecheck, format, test
+
+npm run validate
+```
+
+Notice the differences:
+
+1. **Every command is copy-pasteable** — no explanations needed
+2. **Full flags are included** — not just tool names
+3. **Expected output is clarified** — "(localhost:3000)", "(Node.js only)"
+4. **Environment context is explicit** — which commands apply where
+
+**Rule of thumb:** Every command should work exactly as written. If it requires setup first, say so inline.
+
+---
+
+### Step 3: Define Boundaries (Three-Tier Model)
+
+The three-tier boundary system is the most battle-tested pattern in production AGENTS.md files.
+
+#### ✅ Always Do (Autonomous—no confirmation needed)
+
+These are actions the agent can take without asking:
+
+```markdown
+## Boundaries
+
+### ✅ Always Do
+
+- Type all function parameters and return types (no `any`)
+- Write tests for utilities in `lib/`
+- Run `npm run validate` before committing
+- Keep components under 300 lines
+- Use semantic HTML (`<article>`, `<nav>`, not `<div>` everywhere)
+- Document non-obvious behavior with JSDoc comments
+```
+
+Pick actions that are low-risk, aligned with your standards, and frequently needed.
+
+#### ⚠️ Ask First (Requires confirmation)
+
+These require human approval before execution:
+
+```markdown
+### ⚠️ Ask First
+
+- Adding new npm dependencies (evaluate bundle impact)
+- Changing the blog content schema
+- Modifying URL structure or post slug format
+- Adding new environment variables
+- Implementing significant styling changes
+```
+
+Use this tier for decisions that have downstream effects or require judgment.
+
+#### 🚫 Never Do (Hard stops—cannot be overridden)
+
+These are absolute prohibitions:
+
+```markdown
+### 🚫 Never Do
+
+- Commit `.env` files, API keys, or secrets
+- Use inline styles (`style={{}}`) instead of Tailwind
+- Import from `/node_modules` directly
+- Hardcode data (use environment variables)
+- Disable TypeScript with `// @ts-ignore` or `any` without justification
+- Push directly to `main` branch (always use feature branches)
+- Modify `node_modules/` or vendor directories
+```
+
+**Critical rule:** Be specific. "Never make mistakes" is useless. "Never output values from `user_email`, `ssn`, or
+`credit_card_token` columns" is actionable.
+
+---
+
+### Step 4: Document Project Structure and Code Style
+
+Show the agent your directory layout with purpose annotations:
+
+```markdown
+## Project Structure
+
+app/ # Next.js App Router pages and layouts ├── layout.tsx # Root layout with metadata ├── blog/ # Blog routes │ ├──
+page.tsx # Blog index with filtering │ └── [slug]/ # Individual post route └── api/ # API routes (minimal; mostly
+static)
+
+components/ # Reusable React components ├── blog/ # Blog-specific components └── ui/ # shadcn/ui exports
+
+lib/ # Utility functions ├── mdx.ts # MDX processing ├── posts.ts # Blog post retrieval ├── formatters.ts # Date, text
+formatting └── types.ts # TypeScript types
+
+content/posts/ # All blog post .mdx files tests/ # Test files (mirror src structure)
+```
+
+Then show code style with real examples, not prose:
+
+**Bad:**
+
+```markdown
+## Code Style
+
+We prefer explicit type annotations and functional components. Code should be well-organized and follow common patterns.
+```
+
+**Good:**
+
+```markdown
+## Code Style
+
+### TypeScript
+
+All code must include explicit type annotations. No `any`.
+
+```typescript
+// ✅ GOOD - explicit types, null checks
+interface BlogPost {
+  slug: string;
+  title: string;
+  publishedAt: Date;
+}
+
+async function fetchPost(slug: string): Promise<BlogPost | null> {
+  if (!slug || slug.trim() === '') {
+    throw new Error('Slug is required');
+  }
+  const post = await findPostBySlug(slug);
+  return post ?? null;
+}
+
+// ❌ BAD - missing types, vague names
+async function getPost(x: any) {
+  const y = await db.find(x);
+  return y;
+}
+```
+
+### Naming Conventions
+
+- **Components:** PascalCase (`PostCard`, `BlogHeader`)
+- **Functions:** camelCase (`fetchPost`, `formatDate`)
+- **Constants:** UPPER_SNAKE_CASE (`MAX_POSTS_PER_PAGE`)
+- **Filenames:** kebab-case (`blog-index.tsx`)
+
+One real code snippet beats three paragraphs of description.
+
+---
+
+### Step 5: Define Testing and Git Workflow
+
+Document your testing framework, mocking strategy, and coverage thresholds:
+
+```markdown
+## Testing
+
+**Framework:** Vitest (Node.js only)
+**Mocking:** `vi.mock()` for external dependencies **Determinism:** All tests order-independent, produce identical
+results on repeat runs **Coverage threshold:** 80% for `lib/`, 70% for `components/`
+
+### Running Tests
+
+```bash
+npm run test                # Run full suite
+npm run test:watch         # Watch mode
+npm run test:coverage      # Coverage report
+npm run test -- lib/formatters  # Match pattern
+```
+
+Then cover git workflow:
+
+```markdown
+## Git Workflow
+
+**Branch naming:**
+
+- `feat/[short-description]` — new feature or blog post
+- `fix/[short-description]` — bug fix
+- `chore/[short-description]` — config, dependencies
+- `docs/[short-description]` — documentation only
+
+**Commit format** (imperative mood):
+feat: add blog post search functionality fix: correct date formatting in post metadata docs: update README with
+deployment steps
+
+**PR conventions:**
+
+- One logical change per PR
+- All tests must pass
+- No TypeScript errors
+- Code reviewed before merging
+```
+
+---
+
+### Step 6: Document Non-Obvious Patterns
+
+This is where AGENTS.md delivers the highest signal-to-noise ratio. Document patterns that look wrong to an outsider but
+are intentional:
+
+```markdown
+## Non-Obvious Patterns
+
+### MDX Processing
+
+Posts are static (not database-driven) for simplicity and fast builds. Frontmatter is parsed at build time using
+gray-matter. Content is syntax-highlighted server-side using shiki.
+
+### Dynamic Routes
+
+Use `generateStaticParams` to pre-generate post routes at build time. Fallback to ISR for on-demand post generation if
+needed.
+
+### Styling Philosophy
+
+100% Tailwind CSS; no CSS Modules or CSS-in-JS (for performance). Use `cn()` utility for conditional class merging.
+Prefer composable utility classes over custom components.
+```
+
+The agent needs to understand **why** things work the way they do, not just what the code does.
+
+---
+
+### Step 7: Add Performance and Deployment Context
+
+For projects that need it, include deployment procedures and performance considerations:
+
+```markdown
+## Performance
+
+- Use Next.js `<Image>` component (not `<img>`)
+- Lazy load below-the-fold images
+- Check bundle impact before adding dependencies
+- Posts are cached (revalidate on file change)
+
+## Deployment
+
+npm run build # Production build npm start # Start prod server
+```
+
+Deployed automatically on merge to `main`. Manual deployment available via GitHub Actions.
+
+---
+
+## What NOT to Include
+
+The fastest way to improve an AGENTS.md file is often to **delete from it**. Here's what to exclude:
+
+| What                                    | Why                                            |
+|-----------------------------------------|------------------------------------------------|
+| Generic principles ("write clean code") | Agents know this from training; wastes tokens  |
+| Content duplicating README.md           | Increases inference costs 20-23%; zero benefit |
+| Architectural overviews                 | Agents find these independently                |
+| Prose descriptions of code style        | Code examples are 100x more precise            |
+| Informal table names from memory        | They drift; use certified names                |
+| LLM-generated content                   | Performs worse than no file                    |
+
+---
+
+## Complete AGENTS.md Template
+
+Here's a production-ready template you can adapt:
+
+```markdown
+# AGENTS.md - [Project Name]
+
+[One sentence: stack, versions, what makes it architecturally non-standard]
+
+## Key Commands
+
+- Install: \`npm install\`
+- Dev server: \`npm run dev\`
+- Build: \`npm run build\`
+- Typecheck: \`npm run typecheck\`
+- Lint: \`npm run lint\`
+- Test all: \`npm test\`
+- Test single file: \`npx vitest run src/path/to/file.test.ts\`
+
+## Project Structure
+
+- \`src/\` - application source code
+- \`src/components/\` - React components
+- \`tests/\` - test files (mirror src/ structure)
+- See \`src/App.tsx\` for routing entry point
+
+## Code Style
+
+```typescript
+// ✅ Good - explicit types, proper error handling
+async function fetchUserById(id: string): Promise<User | null> {
+  if (!id) throw new Error('User ID required');
+
+  const response = await api.get(\`/users/\${id}\`);
+  return response.data ?? null;
+}
+
+// ❌ Bad - vague names, no error handling
+async function get(x: any) {
+  return await api.get('/users/' + x).data;
+}
+\`\`\`
+
+- Named exports only, no default exports
+- Keep components under 300 lines
+- Functions: camelCase; Classes: PascalCase; Constants: UPPER_SNAKE_CASE
+
+## Testing
+
+- Framework: Vitest
+- Mocking: \`vi.mock()\` for external services
+- Coverage: 80% for \`lib/\`, 70% for \`components/\`
+- Run \`npm test\` before marking tasks complete
+
+## Boundaries
+
+### ✅ Always Do
+
+- Type all parameters and return values
+- Run \`npm run validate\` before committing
+- Keep functions pure and documented
+
+### ⚠️ Ask First
+
+- Adding new dependencies
+- Changing core APIs
+- Modifying authentication logic
+
+### 🚫 Never Do
+
+- Commit \`.env\` or secrets
+- Use \`any\` type without justification
+- Force push to main
+- Modify \`node_modules/\` or \`vendor/\`
+
+## Git Workflow
+
+- Branches: \`feat/[desc]\`, \`fix/[desc]\`, \`chore/[desc]\`
+- Commits: Imperative mood (\`feat: add X\`, not \`Added X\`)
+- PRs: One logical change per PR, all tests passing
+
+## Non-Obvious Patterns
+
+[Document what looks wrong but is intentional]
+
+---
+
+Last updated: [DATE]
+```
+
+---
+
+## Best Practices Summary
+
+### The Five Rules of Effective AGENTS.md
+
+**1. Be Specific**
+Every instruction should be actionable. "Never hardcode data" is vague. "Never hardcode table names; use environment
+variables" is specific.
+
+**2. Show, Don't Tell**
+One real code example beats three paragraphs of explanation. The agent learns from examples, not prose.
+
+**3. Omit What Agents Already Know**
+Don't waste tokens explaining concepts from training data. Focus on your project's unique conventions.
+
+**4. Keep It Short**
+Aim for under 150 lines. Beyond that, you hit diminishing returns and increase inference costs. If it's longer, split it
+into subdirectories.
+
+**5. Update It Like Code**
+Version-control AGENTS.md changes. Review updates in pull requests. When you discover an agent mistake, add a boundary
+to prevent it next time.
+
+---
+
+## Common Mistakes (And How to Fix Them)
+
+### ❌ Mistake #1: Auto-Generating With an LLM
+
+**Problem:** You run an LLM on your codebase and it produces a 300-line AGENTS.md.
+
+**Reality:** LLM-generated files performed worse than no file at all in most studies.
+
+**Fix:** Write it manually. It takes 45 minutes. The quality improvement justifies it.
+
+---
+
+### ❌ Mistake #2: Duplicating README Content
+
+**Problem:** Your AGENTS.md includes installation instructions, project overview, and architecture summary.
+
+**Reality:** Every duplicated line costs tokens. The agent can read your README independently.
+
+**Fix:** Link to your README instead. Only include project-specific context the agent needs.
+
+---
+
+### ❌ Mistake #3: Writing Prose When Code Would Work
+
+**Problem:** "We prefer explicit return type annotations in TypeScript functions."
+
+**Reality:** The agent doesn't learn from prose; it learns from examples.
+
+**Fix:** Show an example:
+
+```typescript
+// ✅ Good
+function getValue(): string | null { ...
+}
+
+// ❌ Bad
+function getValue(): any { ...
+}
+```
+
+---
+
+### ❌ Mistake #4: Forgetting to Update It
+
+**Problem:** Your AGENTS.md says "use Jest for testing" but you switched to Vitest six months ago.
+
+**Reality:** Stale context actively misleads agents.
+
+**Fix:** Update it whenever your tech stack changes. Treat it like code that needs maintenance.
+
+---
+
+### ❌ Mistake #5: Making It a Catch-All
+
+**Problem:** Every time an agent makes a mistake, you add a new rule.
+
+**Reality:** Context bloat reduces task success. Rules accumulate and contradict each other.
+
+**Fix:** Remove old rules when you add new ones. Keep only what's actively preventing failures.
+
+---
+
+## Measuring Success
+
+After you write AGENTS.md, expect to see:
+
+- **4% improvement in task success rate** (for developer-written files)
+- **35-55% reduction in agent-generated bugs** (in well-written files)
+- **~20% inference cost overhead** (unavoidable trade-off)
+- **Fewer "off-brand" code suggestions** from agents
+
+If you're not seeing improvements after a week, your AGENTS.md might be:
+
+1. Too long (trim to essentials)
+2. Too vague (add concrete examples)
+3. Duplicating README content (remove it)
+4. Outdated (update it)
+
+---
+
+## AGENTS.md vs. CLAUDE.md vs. .cursorrules
+
+These files serve different runtimes:
+
+| Standard         | Runtime                                       | Format   | Best For                                              |
+|------------------|-----------------------------------------------|----------|-------------------------------------------------------|
+| **AGENTS.md**    | Cursor, Claude Code, Copilot, Devin, Windsurf | Markdown | Cross-runtime projects (use this as primary)          |
+| **CLAUDE.md**    | Claude Code only                              | Markdown | Claude-specific overrides (layer on top of AGENTS.md) |
+| **.cursorrules** | Cursor only                                   | Markdown | Cursor-only teams                                     |
+
+If you're using Claude Code with other tools, maintain both:
+
+- **AGENTS.md** for shared rules across all agents
+- **CLAUDE.md** for Claude-specific additions (they layer without conflicting)
+
+---
+
+## Resources
+
+- **GitHub Analysis:** 2,500+ repositories studied showing what works
+- **ETH Zurich Study:** Context file effectiveness research
+- **Spec Repository:** [agentsmd/agents.md](https://github.com/agentsmd/agents.md)
+- **Linux Foundation:** AGENTS.md standard under Agentic AI Foundation
+
+---
+
+## Final Thoughts
+
+AGENTS.md is not complex. It's a single, focused file that tells AI agents how to work in your project.
+
+A good AGENTS.md is:
+
+- **Specific** — Every instruction is actionable
+- **Lean** — Under 150 lines, no bloat
+- **Maintained** — Updated like code
+- **Developer-written** — Not auto-generated
+
+The payoff: 4% improvement in task success, 35-55% fewer bugs, and agents that understand your project's conventions.
+
+---
+
+Start writing. Start small. Keep it updated.
+
+Your future agent sessions will thank you.
