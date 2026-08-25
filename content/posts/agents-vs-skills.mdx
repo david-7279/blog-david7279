@@ -1,0 +1,374 @@
+---
+title: "AGENTS.md vs Skills: When to Use Each and How to Structure Your AI Workflow"
+description: "Understand the difference between AGENTS.md and Skills. Learn when to use each, how to architect your project structure, and implement specialized skills for database, SEO, UI, MDX, documentation, and error handling."
+date: "2026-08-25"
+tags: [ "Architecture", "AI Agents", "Best Practices", "Development Workflow", "Skills" ]
+published: true
+author: "David Vieira"
+---
+
+You have two powerful tools for controlling AI agent behavior: **AGENTS.md** and **Skills**. Many developers treat them
+as interchangeable, or worse, create both without understanding the difference. This creates confusion, duplicated
+instructions, and agents that behave inconsistently.
+
+This guide explains the distinction, shows you when to use each, and provides a complete project structure you can
+implement today.
+
+---
+
+## The Core Difference
+
+Think of them as **rules vs. expertise**.
+
+| Aspect            | AGENTS.md                                | Skills                                          |
+|-------------------|------------------------------------------|-------------------------------------------------|
+| **Purpose**       | Global boundaries and conventions        | Domain-specific workflows and expertise         |
+| **Scope**         | Applies to ALL agent work in the project | Activates only when relevant                    |
+| **File Location** | Repository root                          | `.agents/skills/` directory                     |
+| **Loading**       | Always loaded at session start           | Loaded on-demand when triggered                 |
+| **Context Cost**  | Always visible (~1-2KB)                  | Zero cost until activated                       |
+| **Content**       | Commands, boundaries, code style         | Detailed procedures, checklists, reference docs |
+| **Triggers**      | No triggers; always active               | Description-based triggers                      |
+| **Best For**      | Project-wide constraints                 | Specialized, repetitive tasks                   |
+
+**AGENTS.md says:** "Here's how we work on this project."
+
+**Skills say:** "Here's exactly how to do this specific thing really well."
+
+---
+
+## When to Use AGENTS.md
+
+Use AGENTS.md for constraints and conventions that apply **everywhere**, **always**.
+
+✅ **Perfect for:**
+
+- Executable commands (with exact flags)
+- Three-tier boundaries (Always do / Ask first / Never do)
+- Code style guidelines and naming conventions
+- Testing requirements and coverage thresholds
+- Git workflow and commit format rules
+- Project structure and file organization
+- Non-obvious architectural patterns
+
+❌ **Do NOT use for:**
+
+- Domain-specific workflows
+- Step-by-step procedures
+- Repetitive tasks with detailed checklists
+- Reference documentation
+- Tool-specific expertise
+
+**Real example:**
+
+```markdown
+## Key Commands
+
+npm run dev # Development server
+npm run build # Production build
+npm run test # Run all tests
+npm run validate # Lint, typecheck, test, format
+
+## Boundaries
+
+### ✅ Always Do
+
+- Type all function parameters and return values
+- Run `npm run validate` before committing
+- Write tests for `lib/` utilities
+
+### 🚫 Never Do
+
+- Commit `.env` files or secrets
+- Use inline styles instead of Tailwind
+- Push directly to `main` branch
+```
+
+This is perfect in AGENTS.md because it applies to **every single task** the agent performs on your project.
+
+---
+
+## When to Use Skills
+
+Use Skills for **specialized workflows** that apply to **specific domains** and activate **only when needed**.
+
+✅ **Perfect for:**
+
+- Database operations (schema design, migrations, queries)
+- SEO optimization (meta tags, structured data, content)
+- UI component creation (design system, styling, accessibility)
+- MDX/blog content (frontmatter, formatting, linking)
+- Documentation generation (API docs, READMEs, guides)
+- Error handling and debugging (reproduction, analysis, fixes)
+- Code review processes (checklist, security, performance)
+- Deployment workflows (pre-flight checks, rollback procedures)
+
+❌ **Do NOT use for:**
+
+- Global rules (use AGENTS.md instead)
+- Commands everyone uses (use AGENTS.md instead)
+- Code style (use AGENTS.md instead)
+
+**Real example:**
+
+Instead of cluttering AGENTS.md with a 200-line SEO optimization guide, create `.agents/skills/seo-optimizer/SKILL.md`:
+
+```markdown
+---
+name: seo-optimizer
+description: Optimizes blog content for search engines, including meta tags,
+structured data, internal linking, and readability. Use when user asks to
+"optimize for SEO", "improve search visibility", "add meta tags", or "check
+SEO score".
+---
+
+# SEO Optimization Skill
+
+## When to Activate
+
+Use this skill when:
+
+- Writing or updating blog posts
+- Optimizing content for specific keywords
+- Reviewing SEO performance
+
+## Process
+
+### Step 1: Analyze content structure
+
+### Step 2: Add meta tags and structured data
+
+### Step 3: Verify internal linking opportunities
+
+### Step 4: Check readability metrics
+```
+
+Now AGENTS.md stays clean, and the SEO workflow lives independently. The agent only loads this skill when someone asks
+about SEO.
+
+---
+
+## The Architecture: Project Structure
+
+Here's how to organize AGENTS.md and Skills together:
+
+```
+your-blog-project/
+├── AGENTS.md                           # Global rules (always loaded)
+├── .agents/
+│   ├── AGENTS.md.map                   # Router: maps domains to skills
+│   └── skills/
+│       ├── database/
+│       │   ├── SKILL.md
+│       │   ├── scripts/
+│       │   │   ├── validate-schema.sh
+│       │   │   └── migrate.sh
+│       │   └── references/
+│       │       ├── schema-guidelines.md
+│       │       └── migration-checklist.md
+│       │
+│       ├── seo-optimizer/
+│       │   ├── SKILL.md
+│       │   ├── references/
+│       │   │   ├── meta-tags-guide.md
+│       │   │   ├── structured-data-examples.md
+│       │   │   └── keyword-research.md
+│       │   └── assets/
+│       │       └── og-image-template.svg
+│       │
+│       ├── ui-components/
+│       │   ├── SKILL.md
+│       │   ├── references/
+│       │   │   ├── design-system.md
+│       │   │   ├── accessibility-checklist.md
+│       │   │   └── animation-guidelines.md
+│       │   └── assets/
+│       │       ├── brand-colors.json
+│       │       └── typography.json
+│       │
+│       ├── mdx-formatter/
+│       │   ├── SKILL.md
+│       │   ├── scripts/
+│       │   │   └── validate-frontmatter.js
+│       │   └── references/
+│       │       ├── frontmatter-schema.md
+│       │       └── mdx-best-practices.md
+│       │
+│       ├── documentation/
+│       │   ├── SKILL.md
+│       │   ├── references/
+│       │   │   ├── api-doc-template.md
+│       │   │   ├── readme-template.md
+│       │   │   └── doc-style-guide.md
+│       │   └── assets/
+│       │       └── diagram-template.svg
+│       │
+│       ├── error-handler/
+│       │   ├── SKILL.md
+│       │   ├── scripts/
+│       │   │   ├── reproduce-error.sh
+│       │   │   └── analyze-logs.sh
+│       │   └── references/
+│       │       ├── debugging-checklist.md
+│       │       └── error-patterns.md
+│       │
+│       └── code-review/
+│           ├── SKILL.md
+│           ├── references/
+│           │   ├── review-checklist.md
+│           │   ├── security-guidelines.md
+│           │   └── performance-checklist.md
+│           └── assets/
+│               └── review-template.md
+│
+├── src/
+├── content/
+├── docs/
+└── package.json
+```
+
+This structure is crucial. Each skill is **self-contained**, **independently loadable**, and **clearly scoped**.
+
+---
+
+## The Flow: How It All Works Together
+
+When a user asks your agent to work on the blog:
+
+```
+User: "Write a blog post about TypeScript generics"
+
+Session Start
+↓
+Load AGENTS.md (commands, boundaries, code style)
+↓
+User describes task (blog post request)
+↓
+Agent evaluates skill descriptions:
+
+- mdx-formatter: "format MDX blog posts" → MATCH ✓
+- seo-optimizer: "optimize blog content" → POTENTIAL ✓
+- database: "design schema" → no match
+
+↓
+mdx-formatter loads (since user is creating content)
+↓
+User asks about SEO
+↓
+seo-optimizer loads (both skills now active)
+↓
+Both skills apply to the same task, enhancing different aspects
+↓
+Final post has proper frontmatter, SEO optimization, and follows code style
+```
+
+Each skill activates **independently** based on its description. They **coexist** without conflict. AGENTS.md provides
+the foundation; Skills provide the depth.
+
+---
+
+## Key Principles
+
+### 1. AGENTS.md is Global; Skills are Specific
+
+**Global** = applies to everything  
+**Specific** = applies to one domain
+
+When in doubt, ask: "Does this rule apply to EVERY task?" If yes, AGENTS.md. If no, Skill.
+
+### 2. Skills Have Zero Cost Until Triggered
+
+AGENTS.md is always in context (~1-2KB).  
+Skills only load when relevant.  
+A project with 10 skills has the same startup cost as a project with 1.
+
+### 3. Descriptions Determine Everything
+
+A skill's description determines whether it activates. Spend time crafting clear trigger phrases:
+
+**Bad:** "Helps with blog posts."  
+**Good:** "Formats MDX blog posts with proper frontmatter, syntax validation, and SEO optimization. Use when creating or
+updating blog posts, adding frontmatter, or optimizing for search."
+
+### 4. Self-Contained Skills Scale Better
+
+Each skill should be **readable in isolation**. Someone who encounters only that skill's folder should understand what
+it does without reading other files.
+
+### 5. Progressive Disclosure Keeps Context Lean
+
+SKILL.md (under 500 lines) → references/ (loaded on-demand) → scripts/ (executed without loading)
+
+This three-level structure keeps the agent's context tight while providing unlimited detail.
+
+---
+
+## When to Add a New Skill
+
+You need a new skill when:
+
+1. **You have a repeated workflow** — You find yourself giving similar instructions multiple times
+2. **It's domain-specific** — It doesn't apply to every task
+3. **It has a clear trigger** — You can write a description that accurately captures when to use it
+4. **It's complex enough to warrant it** — More than 30 lines of focused instruction
+
+Don't create a skill for:
+
+- One-time tasks
+- Anything that applies globally (use AGENTS.md)
+- Simple commands (use AGENTS.md)
+- Quick references (put in AGENTS.md inline)
+
+---
+
+## Troubleshooting
+
+### Skills don't trigger automatically
+
+**Problem:** Skill loads only with `/skill-name`, not automatically  
+**Cause:** Description is too vague or lacks trigger phrases  
+**Fix:** Add explicit trigger phrases: "Use when user asks to...", "Activate when you detect..."
+
+### AGENTS.md and Skills overlap
+
+**Problem:** Same information in both places  
+**Cause:** Unclear ownership of content  
+**Fix:** AGENTS.md = global rules only. Skill = domain-specific procedures. If content could go in either, it belongs in
+AGENTS.md.
+
+### Skills load but don't execute well
+
+**Problem:** Skill activates but produces inconsistent results  
+**Cause:** Instructions are vague, missing details, or lack structure  
+**Fix:** Add explicit steps, checklists, examples, and error handling
+
+### Too many skills in `.agents/skills/`
+
+**Problem:** Agent context gets polluted loading descriptions at startup  
+**Cause:** Too many niche skills  
+**Fix:** Merge related skills. A single "content-specialist" skill can handle MDX formatting, SEO, and documentation
+better than three tiny skills.
+
+---
+
+## Summary
+
+| Use AGENTS.md For    | Use Skills For          |
+|----------------------|-------------------------|
+| Global commands      | Domain workflows        |
+| Boundaries           | Specialized expertise   |
+| Code style           | Detailed checklists     |
+| Project structure    | Step-by-step procedures |
+| Tech decisions       | Reference documentation |
+| Naming conventions   | Related tooling         |
+| Testing requirements | Repetitive tasks        |
+
+**AGENTS.md** = **Constitution** (applies to all)  
+**Skills** = **Playbooks** (apply to specific domains)
+
+Together, they create a comprehensive, scalable system that grows with your project without ever overwhelming your
+agent's context window.
+
+---
+
+Your AI agent is now **scalable, maintainable, and perfectly tailored** to your workflow.
