@@ -1,0 +1,526 @@
+---
+title: "AGENTS.md.map: Skill Router Template for AI Agent Projects"
+description: "Complete template for creating an AGENTS.md.map router file that documents how AGENTS.md and specialized Skills interact in your project."
+date: "2026-08-25"
+tags: [ "Architecture", "AI Agents", "Configuration", "Skills", "Template" ]
+published: true
+author: "David Vieira"
+---
+
+The `.agents/AGENTS.md.map` file is your **single source of truth** for how AGENTS.md and Skills work together. It
+answers: "What does the agent do? When? How does it decide?"
+
+Use this template as a starting point for your project.
+
+---
+
+## Template: Complete AGENTS.md.map
+
+```markdown
+# AGENTS.md.map - Skill Router Configuration
+
+**Project:** [Your Project Name]
+**Last Updated:** [Date]
+**Maintainer:** [Your Name]
+**Documentation:** See `/AGENTS.md` for global rules
+
+---
+
+## Overview
+
+This file documents how specialized Skills extend the global AGENTS.md instructions.
+
+### What AGENTS.md Provides (Always Loaded)
+
+The root `/AGENTS.md` file provides project-wide rules loaded at every session start:
+
+- **Commands:** Exact executable commands (`npm run dev`, `npm test`, etc.)
+- **Boundaries:** Three-tier rules (Always Do / Ask First / Never Do)
+- **Code Style:** Naming conventions, type annotations, component structure
+- **Testing:** Framework, mocking strategy, coverage thresholds
+- **Git Workflow:** Branch naming, commit format, PR process
+- **Project Structure:** Directory organization and file purposes
+- **Patterns:** Non-obvious architectural decisions explained
+
+**Size:** ~150 lines | **Cost:** Always loaded (~1-2KB)
+
+### What Skills Provide (Loaded On-Demand)
+
+Specialized skills activate only when relevant, providing domain expertise without bloating the global context.
+
+**Size:** ~200-400 lines each | **Cost:** Zero until triggered
+
+---
+
+## Skill Directory
+
+### 1. Database Skill
+
+**Location:** `.agents/skills/database/`
+**Loaded when:** User asks to design schema, create migration, optimize query, or work with database **Trigger
+phrases:**
+
+- "design schema"
+- "create migration"
+- "write a query"
+- "optimize database"
+- "review database design"
+
+**Provides:**
+
+- Schema design guidelines (naming, types, relationships)
+- Migration workflow (creation, safety checks, rollback procedures)
+- Query optimization patterns (indexing, N+1 prevention)
+- Data validation rules
+- Transaction handling
+
+**Files:**
+
+.agents/skills/database/
+├── SKILL.md (core instructions)
+├── scripts/
+│ ├── validate-schema.sh
+│ ├── generate-migration.sh
+│ └── analyze-queries.sh
+└── references/
+    ├── schema-naming-conventions.md
+    ├── migration-checklist.md
+    └── query-performance-guide.md
+
+**Coordinates with:** AGENTS.md (testing requirements), seo-optimizer (indexing for search)
+
+---
+
+### 2. SEO Optimizer Skill
+
+**Location:** `.agents/skills/seo-optimizer/`
+**Loaded when:** User asks about search optimization, meta tags, or improving discoverability
+**Trigger phrases:**
+- "optimize for SEO"
+- "add meta tags"
+- "improve search visibility"
+- "add structured data"
+- "check SEO score"
+
+**Provides:**
+- Meta tag guidelines (description length, keywords)
+- Structured data templates (JSON-LD, open graph)
+- Internal linking strategy
+- Readability scoring
+- Keyword research approach
+- Image optimization
+
+**Files:**
+
+.agents/skills/seo-optimizer/
+├── SKILL.md (core instructions)
+├── references/
+│ ├── meta-tags-guide.md
+│ ├── structured-data-examples.md
+│ ├── keyword-research-framework.md
+│ └── readability-checklist.md
+└── assets/
+    └── og-image-template.svg
+
+**Coordinates with:** mdx-formatter (adds meta tags to frontmatter), documentation (internal linking)
+
+---
+
+### 3. UI Components Skill
+
+**Location:** `.agents/skills/ui-components/`
+**Loaded when:** User asks to build components, create layouts, or implement design system
+**Trigger phrases:**
+- "create component"
+- "build UI for"
+- "design [component name]"
+- "implement design system"
+- "make this accessible"
+
+**Provides:**
+- Component structure and patterns
+- Design system guidelines (colors, typography, spacing)
+- Tailwind CSS best practices
+- Accessibility requirements (WCAG 2.1 AA)
+- Animation and motion guidelines
+- Responsive design patterns
+
+**Files:**
+
+.agents/skills/ui-components/
+├── SKILL.md (core instructions)
+├── references/
+│ ├── design-system.md
+│ ├── accessibility-checklist.md
+│ ├── animation-guidelines.md
+│ └── responsive-patterns.md
+└── assets/
+    ├── brand-colors.json
+    ├── typography.json
+    └── spacing-scale.json
+
+**Coordinates with:** AGENTS.md (code style, TypeScript types), error-handler (accessibility testing)
+
+---
+
+### 4. MDX Formatter Skill
+
+**Location:** `.agents/skills/mdx-formatter/`
+**Loaded when:** User asks to format content, create posts, or validate MDX syntax
+**Trigger phrases:**
+- "format this post"
+- "add frontmatter"
+- "create a blog post"
+- "fix MDX syntax"
+- "update blog content"
+
+**Provides:**
+- Frontmatter schema and validation
+- MDX syntax rules
+- Content structure guidelines
+- Internal linking format
+- Image path conventions
+- Markdown best practices
+
+**Files:**
+
+.agents/skills/mdx-formatter/
+├── SKILL.md (core instructions)
+├── scripts/
+│ ├── validate-frontmatter.js
+│ ├── check-links.sh
+│ └── validate-syntax.sh
+└── references/
+    ├── frontmatter-schema.md
+    ├── mdx-best-practices.md
+    └── internal-linking-guide.md
+
+**Coordinates with:** seo-optimizer (SEO frontmatter), documentation (content structure)
+
+---
+
+### 5. Documentation Skill
+
+**Location:** `.agents/skills/documentation/`
+**Loaded when:** User asks to write docs, create guides, or generate API documentation
+**Trigger phrases:**
+- "write documentation"
+- "create API docs"
+- "generate README"
+- "write a guide"
+- "document [feature]"
+
+**Provides:**
+- API documentation template and structure
+- README conventions and layout
+- Tutorial/guide structure
+- Code example formatting
+- Table of contents generation
+- Versioning strategy
+
+**Files:**
+
+.agents/skills/documentation/
+├── SKILL.md (core instructions)
+├── references/
+│ ├── api-doc-template.md
+│ ├── readme-template.md
+│ ├── guide-structure.md
+│ └── doc-style-guide.md
+└── assets/
+    ├── architecture-diagram-template.svg
+    └── api-endpoint-template.md
+
+**Coordinates with:** mdx-formatter (content formatting), seo-optimizer (discoverability)
+
+---
+
+### 6. Error Handler Skill
+
+**Location:** `.agents/skills/error-handler/`
+**Loaded when:** User reports a bug, asks to debug, or requests error analysis
+**Trigger phrases:**
+- "debug this error"
+- "fix the bug"
+- "analyze this crash"
+- "why is this failing"
+- "help me understand this error"
+
+**Provides:**
+- Error reproduction workflow
+- Debugging checklist
+- Log analysis techniques
+- Error pattern recognition
+- Stack trace interpretation
+- Root cause analysis framework
+
+**Files:**
+
+.agents/skills/error-handler/
+├── SKILL.md (core instructions)
+├── scripts/
+│ ├── reproduce-error.sh
+│ ├── analyze-logs.sh
+│ └── extract-stack-trace.sh
+└── references/
+    ├── debugging-checklist.md
+    ├── error-patterns.md
+    ├── log-format-guide.md
+    └── common-errors.md
+
+**Coordinates with:** AGENTS.md (testing approach), database (data-related errors)
+
+---
+
+### 7. Code Review Skill
+
+**Location:** `.agents/skills/code-review/`
+**Loaded when:** User asks to review code, check a PR, or provide feedback
+**Trigger phrases:**
+- "review this code"
+- "check my PR"
+- "give feedback on"
+- "code review for"
+- "is this production-ready"
+
+**Provides:**
+- Review checklist (correctness, security, performance)
+- Security scanning guidelines
+- Performance optimization patterns
+- Testing coverage expectations
+- Code quality standards
+- Review output format
+
+**Files:**
+
+.agents/skills/code-review/
+├── SKILL.md (core instructions)
+├── references/
+│ ├── review-checklist.md
+│ ├── security-guidelines.md
+│ ├── performance-checklist.md
+│ └── testing-expectations.md
+└── assets/
+└── review-template.md
+
+**Coordinates with:** AGENTS.md (code style, testing), error-handler (failure analysis)
+
+---
+
+## Skill Activation Flow
+
+Skill Activation Flow
+
+┌─ User Request Arrives ──────────┐
+│                                 │
+│ "Write a blog post about hooks" │
+└──────────────┬──────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│ Load AGENTS.md                   │
+│ (commands, boundaries, style)    │
+│ Cost: ~1-2KB                     │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│ Evaluate Skill Descriptions      │
+│                                  │
+│ mdx-formatter: "blog posts" ✓    │
+│ seo-optimizer: "content" ✓       │
+│ database: "schema" ✗             │
+│ ui-components: "components" ✗    │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│ Load Matching Skills             │
+│                                  │
+│ mdx-formatter/SKILL.md (loaded)  │
+│ seo-optimizer/SKILL.md (loaded)  │
+│ Cost: +3-4KB (only if triggered) │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│ Execute Task                     │
+│                                  │
+│ - Format with MDX rules          │
+│ - Add SEO optimization           │
+│ - Follow code style from AGENTS  │
+│ - Follow boundaries from AGENTS  │
+└──────────────────────────────────┘
+```
+
+**Key Point:** Skills only load when their description matches the request. Database skill never loads for this task.
+
+---
+
+## Adding a New Skill
+
+When you need a new domain:
+
+### 1. Create the directory
+
+```bash
+mkdir -p .agents/skills/[domain-name]/{scripts,references}
+touch .agents/skills/[domain-name]/SKILL.md
+```
+
+### 2. Write the SKILL.md frontmatter
+
+```yaml
+---
+name: [ domain-name ]
+description: Clear statement of what the skill does, specific trigger phrases,
+when to use it. Example: "Optimizes blog content for search engines including
+meta tags, structured data, and internal linking. Use when user asks to
+'optimize for SEO', 'add meta tags', 'improve search visibility'."
+---
+```
+
+### 3. Write the instructions
+
+Keep SKILL.md under 400 lines. Use progressive disclosure:
+
+- Main instructions in SKILL.md
+- Detailed references in `references/`
+- Executable commands in `scripts/`
+
+### 4. Update this AGENTS.md.map
+
+Add your skill to the directory below, including trigger phrases and file structure.
+
+### 5. Commit together
+
+```bash
+git add .agents/skills/[domain-name]/
+git add .agents/AGENTS.md.map
+git commit -m "Add [domain-name] skill"
+```
+
+---
+
+## Example: Blog Project Complete
+
+Here's what a complete `.agents/AGENTS.md.map` looks like for a personal blog:
+
+```markdown
+# AGENTS.md.map - Personal Programming Blog
+
+**Project:** Personal blog at [yoursite.com]
+**Tech Stack:** Next.js, TypeScript, TailwindCSS, MDX
+**Maintainer:** David Vieira
+**Updated:** August 25, 2026
+
+---
+
+## Core: AGENTS.md
+
+Global rules for all agent work:
+
+- Commands: `npm run dev|build|test|validate`
+- Boundaries: code style, git workflow, testing (80% coverage)
+- Structure: `app/`, `components/`, `content/posts/`, `lib/`
+- Patterns: MDX at build-time, server components for performance
+
+**Cost:** Always active (~1KB)
+
+---
+
+## Specialized Skills
+
+### Database Skill
+
+**Location:** `.agents/skills/database/SKILL.md`
+**Triggers:** "design schema", "create migration", "optimize query"
+**Use Case:** Schema design, migrations, query optimization **Coordinates:** Works with testing requirements from
+AGENTS.md
+
+### SEO Optimizer Skill
+
+**Location:** `.agents/skills/seo-optimizer/SKILL.md`
+**Triggers:** "optimize for SEO", "add meta tags", "improve search"
+**Use Case:** Meta tags, structured data, internal linking **Coordinates:** Enhances MDX-formatted posts with SEO
+metadata
+
+### UI Components Skill
+
+**Location:** `.agents/skills/ui-components/SKILL.md`
+**Triggers:** "create component", "build UI", "make accessible"
+**Use Case:** Component creation, design system, accessibility **Coordinates:** Enforces code style from AGENTS.md
+
+### MDX Formatter Skill
+
+**Location:** `.agents/skills/mdx-formatter/SKILL.md`
+**Triggers:** "format post", "add frontmatter", "create blog post"
+**Use Case:** Post formatting, frontmatter validation, content structure **Coordinates:** Feeds into SEO optimizer for
+meta tags
+
+### Documentation Skill
+
+**Location:** `.agents/skills/documentation/SKILL.md`
+**Triggers:** "write docs", "create README", "generate API docs"
+**Use Case:** API documentation, guides, technical writing **Coordinates:** Uses MDX formatting for consistency
+
+### Error Handler Skill
+
+**Location:** `.agents/skills/error-handler/SKILL.md`
+**Triggers:** "debug this", "fix the bug", "analyze error"
+**Use Case:** Bug reproduction, debugging, log analysis **Coordinates:** References testing approach from AGENTS.md
+
+### Code Review Skill
+
+**Location:** `.agents/skills/code-review/SKILL.md`
+**Triggers:** "review code", "check my PR", "give feedback"
+**Use Case:** Code quality, security, performance review **Coordinates:** Enforces code style and testing requirements
+
+---
+
+## Typical Workflows
+
+### Writing a Blog Post
+
+1. AGENTS.md loads (commands, style, structure)
+2. User asks: "Write a post about React"
+3. mdx-formatter skill loads (frontmatter, content rules)
+4. User asks about SEO
+5. seo-optimizer skill loads (meta tags, keywords, linking)
+6. Agent formats post following both skill rules
+
+### Debugging a Bug
+
+1. AGENTS.md loads (commands, testing rules)
+2. User reports: "Why is the database query failing?"
+3. error-handler skill loads (debugging workflow)
+4. database skill might load if schema/query issues emerge
+5. Agent reproduces error, analyzes logs, suggests fix
+
+### Code Review
+
+1. AGENTS.md loads (code style, boundaries)
+2. User asks: "Review my component"
+3. ui-components skill loads (accessibility, design)
+4. code-review skill loads (quality, security, testing)
+5. Agent reviews against both skill checklists
+
+---
+
+## Maintenance Checklist
+
+- [ ] Each skill has 3+ distinct trigger phrases
+- [ ] No skill exceeds 400 lines (use references/ for excess)
+- [ ] All scripts/ are executable and tested
+- [ ] References are progressively disclosed (loaded on-demand)
+- [ ] This map is updated when skills change
+- [ ] Overlapping triggers are documented
+
+---
+
+**Last updated:** August 25, 2026
+**Questions?** See `/AGENTS.md` or individual skill docs
+```
+
+This becomes the **documentation** and **source of truth** for your entire agent infrastructure. Commit it alongside
+your AGENTS.md and skills. Keep it up to date as your project evolves.
