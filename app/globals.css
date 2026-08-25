@@ -204,3 +204,89 @@
     --tw-prose-td-borders: var(--border);
   }
 }
+
+/* =========================
+   CODE BLOCKS - SHIKI
+   ========================= */
+
+/*
+ * Shiki generates --shiki-light and --shiki-dark
+ * on the highlighted spans.
+ *
+ * The code block background itself is controlled by
+ * Tailwind (`bg-muted`) in CodeRenderer.
+ */
+
+.code-block-content .shiki {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+.code-block-content .shiki pre {
+  background-color: transparent !important;
+}
+
+.code-block-content .shiki span {
+  background-color: transparent !important;
+  color: var(--shiki-light) !important;
+}
+
+/* Dark mode */
+
+.dark .code-block-content .shiki {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+.dark .code-block-content .shiki pre {
+  background-color: transparent !important;
+}
+
+.dark .code-block-content .shiki span {
+  background-color: transparent !important;
+  color: var(--shiki-dark) !important;
+}
+
+/* =========================
+   CODE BLOCKS - LINE NUMBERS
+   ========================= */
+
+.cbln code {
+  counter-reset: line;
+  counter-increment: line 0;
+}
+
+.cbln .line::before {
+  content: counter(line);
+  counter-increment: line;
+
+  display: inline-block;
+
+  min-width: 1.5rem;
+  margin-right: 1rem;
+  padding-right: 0.75rem;
+
+  text-align: right;
+
+  font-size: 0.75rem;
+  line-height: 1.7;
+
+  user-select: none;
+
+  color: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
+}
+
+/* =========================
+   CODE BLOCKS - HIGHLIGHTED
+   ========================= */
+
+.cbhl .line-highlighted {
+  display: block;
+
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+
+  background-color: oklch(0.828 0.189 84.429 / 0.12);
+
+  border-left: 2px solid oklch(0.769 0.188 70.08);
+}
