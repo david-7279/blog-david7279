@@ -25,7 +25,7 @@ template you can use today.
 
 ## Why AGENTS.md Matters (And Why Most Teams Get It Wrong)
 
-Before you write a single line, understand this: **AGENTS.md is not documentation for humans—it's a runtime instruction
+Before you write a single line, understand this: **AGENTS.md is not documentation for humans — it's a runtime instruction
 set for machines.**
 
 Every token you waste on principles the agent already knows from training increases inference costs by 20-23% with zero
@@ -263,16 +263,22 @@ Show the agent your directory layout with purpose annotations:
 ```markdown
 ## Project Structure
 
-app/ # Next.js App Router pages and layouts ├── layout.tsx # Root layout with metadata ├── blog/ # Blog routes │ ├──
-page.tsx # Blog index with filtering │ └── [slug]/ # Individual post route └── api/ # API routes (minimal; mostly
-static)
-
-components/ # Reusable React components ├── blog/ # Blog-specific components └── ui/ # shadcn/ui exports
-
-lib/ # Utility functions ├── mdx.ts # MDX processing ├── posts.ts # Blog post retrieval ├── formatters.ts # Date, text
-formatting └── types.ts # TypeScript types
-
-content/posts/ # All blog post .mdx files tests/ # Test files (mirror src structure)
+app/ # Next.js App Router pages and layouts
+├── layout.tsx # Root layout with metadata
+├── blog/ # Blog routes
+│ ├── page.tsx # Blog index with filtering
+│ └── [slug]/ # Individual post route
+└── api/ # API routes (minimal; mostly static)
+components/ # Reusable React components
+    ├── blog/ # Blog-specific components
+    └── ui/ # shadcn/ui exports
+lib/ # Utility functions
+    ├── mdx.ts # MDX processing
+    ├── posts.ts # Blog post retrieval
+    ├── formatters.ts # Date, text formatting
+    └── types.ts # TypeScript types
+content/posts/ # All blog post .mdx files
+tests/ # Test files (mirror src structure)
 ```
 
 Then show code style with real examples, not prose:
@@ -336,8 +342,9 @@ Document your testing framework, mocking strategy, and coverage thresholds:
 ## Testing
 
 **Framework:** Vitest (Node.js only)
-**Mocking:** `vi.mock()` for external dependencies **Determinism:** All tests order-independent, produce identical
-results on repeat runs **Coverage threshold:** 80% for `lib/`, 70% for `components/`
+**Mocking:** `vi.mock()` for external dependencies
+**Determinism:** All tests order-independent, produce identical results on repeat runs
+**Coverage threshold:** 80% for `lib/`, 70% for `components/`
 
 ### Running Tests
 
@@ -361,8 +368,9 @@ Then cover git workflow:
 - `docs/[short-description]` — documentation only
 
 **Commit format** (imperative mood):
-feat: add blog post search functionality fix: correct date formatting in post metadata docs: update README with
-deployment steps
+- feat: add blog post search functionality
+- fix: correct date formatting in post metadata
+- docs: update README with deployment steps
 
 **PR conventions:**
 
@@ -384,17 +392,19 @@ are intentional:
 
 ### MDX Processing
 
-Posts are static (not database-driven) for simplicity and fast builds. Frontmatter is parsed at build time using
-gray-matter. Content is syntax-highlighted server-side using shiki.
+Posts are static (not database-driven) for simplicity and fast builds.
+Frontmatter is parsed at build time using gray-matter.
+Content is syntax-highlighted server-side using shiki.
 
 ### Dynamic Routes
 
-Use `generateStaticParams` to pre-generate post routes at build time. Fallback to ISR for on-demand post generation if
-needed.
+Use `generateStaticParams` to pre-generate post routes at build time.
+Fallback to ISR for on-demand post generation if needed.
 
 ### Styling Philosophy
 
-100% Tailwind CSS; no CSS Modules or CSS-in-JS (for performance). Use `cn()` utility for conditional class merging.
+100% Tailwind CSS; no CSS Modules or CSS-in-JS (for performance).
+Use `cn()` utility for conditional class merging.
 Prefer composable utility classes over custom components.
 ```
 
